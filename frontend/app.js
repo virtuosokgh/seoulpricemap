@@ -770,7 +770,7 @@ async function syncFromExternalAPI() {
         console.log('🔄 외부 API에서 데이터 동기화 중...');
 
         const response = await fetch(
-            `${SUPABASE_URL}/functions/v1/fetch-housing-data?action=sync-data`,
+            `${SUPABASE_URL}/functions/v1/dynamic-handler?action=sync-data`,
             {
                 method: 'GET',
                 headers: {
