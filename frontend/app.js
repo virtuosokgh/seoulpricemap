@@ -782,7 +782,7 @@ async function syncFromExternalAPI() {
             {
                 method: 'GET',
                 headers: {
-                    'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                    'apikey': SUPABASE_ANON_KEY,
                     'Content-Type': 'application/json'
                 }
             }
