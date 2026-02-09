@@ -184,32 +184,86 @@ serve(async (req: Request) => {
 // 부동산통계정보시스템 API에서 데이터 가져오기
 async function fetchRealEstateData() {
     try {
-        // R-ONE API 엔드포인트 (주택가격동향조사 매매가격지수변동률)
-        const baseUrl = "https://api.reb.or.kr/statistics";
-        const endpoint = "/weeklyHousingPriceIndexChange";
+        // R-ONE API 엔드포인트 (주택가격동향조사)
+        // 주간 아파트 매매가격지수 변동률 - STATBL_ID 확인 필요
+        const baseUrl = "https://www.reb.or.kr/r-one/openapi/SttsApiTbl.do";
 
         const params = new URLSearchParams({
-            serviceKey: RONE_API_KEY,
-            region: "11", // 서울특별시
-            houseType: "01", // 아파트
-            pageNo: "1",
-            numOfRows: "100",
-            dataType: "json",
+            KEY: RONE_API_KEY,
+            Type: "json",
+            pIndex: "1",
+            pSize: "100",
+            STATBL_ID: "T_한국부동산원_주간아파트매매가격변동률_시도",  // 주간 아파트 매매가격 변동률
         });
 
-        const response = await fetch(`${baseUrl}${endpoint}?${params}`);
+        console.log("Calling R-ONE API:", `${baseUrl}?${params}`);
+        const response = await fetch(`${baseUrl}?${params}`);
 
         if (!response.ok) {
+            console.log("R-ONE API response not ok:", response.status);
             throw new Error(`API request failed: ${response.status}`);
         }
 
         const data = await response.json();
-        return processApiData(data);
+        console.log("R-ONE API response:", JSON.stringify(data).substring(0, 500));
+
+        if (data && data.SttsApiTbl && data.SttsApiTbl[1] && data.SttsApiTbl[1].row) {
+            return processROneData(data.SttsApiTbl[1].row);
+        }
+
+        throw new Error("No data from R-ONE API");
     } catch (error) {
         console.error("Failed to fetch from R-ONE API:", error);
         // Fallback: 공공데이터포털 API 시도
         return fetchFromDataGoKr();
     }
+}
+
+// R-ONE API 데이터 처리
+function processROneData(rows: any[]): Record<string, any> {
+    const processed: Record<string, any> = {};
+    const districtNameMapping: Record<string, string> = {
+        "서울특별시": "seoul_avg",
+        "강남구": "gangnam",
+        "강동구": "gangdong",
+        "강북구": "gangbuk",
+        "강서구": "gangseo",
+        "관악구": "gwanak",
+        "광진구": "gwangjin",
+        "구로구": "guro",
+        "금천구": "geumcheon",
+        "노원구": "nowon",
+        "도봉구": "dobong",
+        "동대문구": "dongdaemun",
+        "동작구": "dongjak",
+        "마포구": "mapo",
+        "서대문구": "seodaemun",
+        "서초구": "seocho",
+        "성동구": "seongdong",
+        "성북구": "seongbuk",
+        "송파구": "songpa",
+        "양천구": "yangcheon",
+        "영등포구": "yeongdeungpo",
+        "용산구": "yongsan",
+        "은평구": "eunpyeong",
+        "종로구": "jongno",
+        "중구": "jung",
+        "중랑구": "jungnang",
+    };
+
+    for (const row of rows) {
+        const regionName = row.CL_NM || row.WRTTIME_IDTFR_ID;
+        const districtId = districtNameMapping[regionName];
+
+        if (districtId && districtId !== "seoul_avg") {
+            processed[districtId] = {
+                rate: parseFloat(row.DT || row.DATA || 0),
+                period: row.PRD_DE || row.TIME || new Date().toISOString().split('T')[0],
+            };
+        }
+    }
+
+    return processed;
 }
 
 async function fetchFromDataGoKr() {
