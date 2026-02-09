@@ -756,3 +756,47 @@ function updateDistrictData(districts, prices) {
         }
     });
 }
+
+// ========================================
+// 외부 API 동기화 함수
+// ========================================
+async function syncFromExternalAPI() {
+    if (!supabaseClient) {
+        console.error('Supabase client not available');
+        return { success: false, error: 'Supabase client not available' };
+    }
+
+    try {
+        console.log('🔄 외부 API에서 데이터 동기화 중...');
+
+        const response = await fetch(
+            `${SUPABASE_URL}/functions/v1/fetch-housing-data?action=sync-data`,
+            {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                    'Content-Type': 'application/json'
+                }
+            }
+        );
+
+        const result = await response.json();
+
+        if (result.success) {
+            console.log('✅ 외부 API 동기화 완료:', result.message);
+            // 데이터 다시 로드
+            await loadDataFromSupabase();
+            updateDisplay();
+            return result;
+        } else {
+            console.error('❌ 동기화 실패:', result.error);
+            return result;
+        }
+    } catch (error) {
+        console.error('❌ 동기화 에러:', error);
+        return { success: false, error: error.message };
+    }
+}
+
+// 전역으로 노출 (콘솔에서 호출 가능)
+window.syncFromExternalAPI = syncFromExternalAPI;

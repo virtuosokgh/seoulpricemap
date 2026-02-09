@@ -75,6 +75,52 @@ serve(async (req: Request) => {
             });
         }
 
+        if (action === "sync-data") {
+            // 외부 API에서 데이터를 가져와 DB에 저장
+            const apiData = await fetchRealEstateData();
+
+            if (!apiData || Object.keys(apiData).length === 0) {
+                return new Response(JSON.stringify({ success: false, error: "No data from API" }), {
+                    headers: { ...corsHeaders, "Content-Type": "application/json" },
+                    status: 200,
+                });
+            }
+
+            // 현재 주차 계산
+            const now = new Date();
+            const weekNum = Math.ceil((now.getDate() + new Date(now.getFullYear(), now.getMonth(), 1).getDay()) / 7);
+            const periodValue = `${now.getFullYear()}-W${String(weekNum).padStart(2, '0')}`;
+
+            // DB에 저장
+            const insertData = Object.entries(apiData).map(([districtId, info]: [string, any]) => ({
+                district_id: districtId,
+                period_type: 'weekly',
+                period_value: periodValue,
+                rate: info.rate
+            }));
+
+            const { error: insertError } = await supabaseClient
+                .from('housing_prices')
+                .upsert(insertData, { onConflict: 'district_id,period_type,period_value' });
+
+            if (insertError) {
+                console.error("Insert error:", insertError);
+                return new Response(JSON.stringify({ success: false, error: insertError.message }), {
+                    headers: { ...corsHeaders, "Content-Type": "application/json" },
+                    status: 500,
+                });
+            }
+
+            return new Response(JSON.stringify({
+                success: true,
+                message: `Synced ${insertData.length} districts for ${periodValue}`,
+                data: apiData
+            }), {
+                headers: { ...corsHeaders, "Content-Type": "application/json" },
+                status: 200,
+            });
+        }
+
         if (action === "get-districts") {
             // 구 목록 조회
             const { data, error } = await supabaseClient
