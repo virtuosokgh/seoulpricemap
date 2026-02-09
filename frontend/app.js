@@ -6,6 +6,10 @@
 const SUPABASE_URL = 'https://kspzqwtlpeibbeskfwdc.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_nCC6kt-KDpugNANJo7hU9A_Ak0XCIAz';
 
+// Supabase 클라이언트 초기화
+let supabaseClient = null;
+let isDataLoaded = false;
+
 // ========================================
 // 서울 25개 구 실제 데이터 (2026년 2월 기준)
 // 부동산통계정보시스템 기반 데이터
@@ -318,7 +322,14 @@ let trendChart = null;
 // ========================================
 // 초기화
 // ========================================
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    // Supabase 클라이언트 초기화
+    if (typeof supabase !== 'undefined') {
+        supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // Supabase에서 실데이터 로드 시도
+        await loadDataFromSupabase();
+    }
+
     initializeMap();
     initializeTabs();
     initializeModal();
@@ -674,23 +685,74 @@ function getWeekNumber(date) {
 }
 
 // ========================================
-// Supabase 연동 (배포 시 활성화)
+// Supabase 연동 - 실데이터 로드
 // ========================================
-/*
-async function fetchDataFromSupabase() {
-    const { createClient } = supabase;
-    const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    
-    const { data, error } = await supabaseClient
-        .from('housing_prices')
-        .select('*')
-        .order('created_at', { ascending: false });
-    
-    if (error) {
-        console.error('Error fetching data:', error);
-        return null;
+async function loadDataFromSupabase() {
+    if (!supabaseClient) {
+        console.log('Supabase client not available, using fallback data');
+        return;
     }
-    
-    return data;
+
+    try {
+        // 구 정보 가져오기
+        const { data: districts, error: districtError } = await supabaseClient
+            .from('districts')
+            .select('*');
+
+        if (districtError) {
+            console.error('Error fetching districts:', districtError);
+            return;
+        }
+
+        // 가격 데이터 가져오기
+        const { data: prices, error: priceError } = await supabaseClient
+            .from('housing_prices')
+            .select('*')
+            .order('period_value', { ascending: false });
+
+        if (priceError) {
+            console.error('Error fetching prices:', priceError);
+            return;
+        }
+
+        if (districts && districts.length > 0 && prices && prices.length > 0) {
+            // 데이터를 seoulDistrictData 형식으로 변환
+            updateDistrictData(districts, prices);
+            isDataLoaded = true;
+            console.log('✅ Supabase에서 실데이터 로드 완료!');
+        }
+    } catch (error) {
+        console.error('Error loading data from Supabase:', error);
+    }
 }
-*/
+
+function updateDistrictData(districts, prices) {
+    // 구별로 데이터 그룹화
+    const pricesByDistrict = {};
+
+    prices.forEach(price => {
+        if (!pricesByDistrict[price.district_id]) {
+            pricesByDistrict[price.district_id] = {
+                weekly: [],
+                monthly: [],
+                yearly: []
+            };
+        }
+        pricesByDistrict[price.district_id][price.period_type].push(parseFloat(price.rate));
+    });
+
+    // seoulDistrictData 업데이트
+    districts.forEach(district => {
+        const districtPrices = pricesByDistrict[district.id];
+
+        if (districtPrices && seoulDistrictData[district.id]) {
+            ['weekly', 'monthly', 'yearly'].forEach(period => {
+                if (districtPrices[period] && districtPrices[period].length > 0) {
+                    const rates = districtPrices[period].slice(0, 6);
+                    seoulDistrictData[district.id][period].current = rates[0] || 0;
+                    seoulDistrictData[district.id][period].history = rates.slice(1, 6);
+                }
+            });
+        }
+    });
+}
