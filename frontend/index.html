@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,9 +9,12 @@
     <link rel="stylesheet" href="styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
+
 <body>
     <div class="app-container">
         <!-- Header -->
@@ -38,12 +42,12 @@
                         <button class="tab-btn" data-period="yearly">연간</button>
                     </div>
                 </div>
-                
+
                 <div class="map-container">
                     <div class="map-wrapper" id="seoul-map">
                         <!-- SVG Map will be inserted here -->
                     </div>
-                    
+
                     <!-- Tooltip -->
                     <div class="map-tooltip" id="map-tooltip">
                         <div class="tooltip-title"></div>
@@ -95,7 +99,7 @@
                         <!-- Dynamic content -->
                     </ul>
                 </div>
-                
+
                 <div class="stats-card top-decrease">
                     <h3>📉 하락률 TOP 5</h3>
                     <ul class="stats-list" id="top-decrease-list">
@@ -147,4 +151,5 @@
 
     <script src="app.js"></script>
 </body>
+
 </html>

@@ -3,8 +3,8 @@
 // ========================================
 
 // Supabase Configuration (Production)
-const SUPABASE_URL = 'YOUR_SUPABASE_URL';
-const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+const SUPABASE_URL = 'https://kspzqwtlpeibbeskfwdc.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_nCC6kt-KDpugNANJo7hU9A_Ak0XCIAz';
 
 // ========================================
 // 서울 25개 구 실제 데이터 (2026년 2월 기준)
@@ -331,7 +331,7 @@ document.addEventListener('DOMContentLoaded', () => {
 function initializeMap() {
     const mapWrapper = document.getElementById('seoul-map');
     mapWrapper.innerHTML = seoulMapSVG;
-    
+
     // 각 구역에 이벤트 리스너 추가
     const districts = mapWrapper.querySelectorAll('.district');
     districts.forEach(district => {
@@ -339,21 +339,21 @@ function initializeMap() {
         district.addEventListener('click', () => {
             openDistrictModal(district.id);
         });
-        
+
         // 호버 이벤트
         district.addEventListener('mouseenter', (e) => {
             showTooltip(e, district.id);
         });
-        
+
         district.addEventListener('mousemove', (e) => {
             moveTooltip(e);
         });
-        
+
         district.addEventListener('mouseleave', () => {
             hideTooltip();
         });
     });
-    
+
     // 초기 색상 적용
     colorizeMap();
 }
@@ -363,11 +363,11 @@ function initializeMap() {
 // ========================================
 function colorizeMap() {
     const districts = document.querySelectorAll('.district');
-    
+
     districts.forEach(district => {
         const districtId = district.id;
         const data = seoulDistrictData[districtId];
-        
+
         if (data) {
             const rate = data[currentPeriod].current;
             const color = getColorForRate(rate, currentPeriod);
@@ -384,9 +384,9 @@ function getColorForRate(rate, period) {
     let scale = 1;
     if (period === 'monthly') scale = 0.2;
     if (period === 'yearly') scale = 0.02;
-    
+
     const normalizedRate = rate * scale;
-    
+
     if (normalizedRate <= -0.1) return '#1a5fb4';      // 진한 파랑
     if (normalizedRate <= -0.05) return '#3584e4';    // 파랑
     if (normalizedRate <= -0.01) return '#99c1f1';    // 연한 파랑
@@ -402,16 +402,16 @@ function getColorForRate(rate, period) {
 // ========================================
 function initializeTabs() {
     const tabs = document.querySelectorAll('.tab-btn');
-    
+
     tabs.forEach(tab => {
         tab.addEventListener('click', () => {
             // 활성 탭 변경
             tabs.forEach(t => t.classList.remove('active'));
             tab.classList.add('active');
-            
+
             // 기간 변경
             currentPeriod = tab.dataset.period;
-            
+
             // 화면 업데이트
             updateDisplay();
         });
@@ -439,7 +439,7 @@ function updateStats() {
             rate: data[currentPeriod].current
         }))
         .sort((a, b) => b.rate - a.rate);
-    
+
     // 상승률 TOP 5
     const topIncreaseList = document.getElementById('top-increase-list');
     topIncreaseList.innerHTML = sortedData.slice(0, 5)
@@ -449,7 +449,7 @@ function updateStats() {
                 <span class="rate positive">+${d.rate.toFixed(2)}%</span>
             </li>
         `).join('');
-    
+
     // 하락률 TOP 5 (가장 낮은 상승률)
     const topDecreaseList = document.getElementById('top-decrease-list');
     topDecreaseList.innerHTML = sortedData.slice(-5).reverse()
@@ -459,7 +459,7 @@ function updateStats() {
                 <span class="rate ${d.rate >= 0 ? 'positive' : 'negative'}">${d.rate >= 0 ? '+' : ''}${d.rate.toFixed(2)}%</span>
             </li>
         `).join('');
-    
+
     // 평균 계산
     const average = sortedData.reduce((sum, d) => sum + d.rate, 0) / sortedData.length;
     document.getElementById('average-value').textContent = `+${average.toFixed(2)}%`;
@@ -483,15 +483,15 @@ function updateAverageLabel() {
 function showTooltip(e, districtId) {
     const tooltip = document.getElementById('map-tooltip');
     const data = seoulDistrictData[districtId];
-    
+
     if (data) {
         const rate = data[currentPeriod].current;
         tooltip.querySelector('.tooltip-title').textContent = data.name;
-        
+
         const valueEl = tooltip.querySelector('.tooltip-value');
         valueEl.textContent = `${rate >= 0 ? '+' : ''}${rate.toFixed(2)}%`;
         valueEl.className = `tooltip-value ${rate >= 0 ? 'positive' : 'negative'}`;
-        
+
         tooltip.classList.add('visible');
         moveTooltip(e);
     }
@@ -501,10 +501,10 @@ function moveTooltip(e) {
     const tooltip = document.getElementById('map-tooltip');
     const mapContainer = document.querySelector('.map-container');
     const rect = mapContainer.getBoundingClientRect();
-    
+
     const x = e.clientX - rect.left + 15;
     const y = e.clientY - rect.top + 15;
-    
+
     tooltip.style.left = `${x}px`;
     tooltip.style.top = `${y}px`;
 }
@@ -520,12 +520,12 @@ function hideTooltip() {
 function initializeModal() {
     const overlay = document.getElementById('modal-overlay');
     const closeBtn = document.getElementById('modal-close');
-    
+
     closeBtn.addEventListener('click', closeModal);
     overlay.addEventListener('click', (e) => {
         if (e.target === overlay) closeModal();
     });
-    
+
     // ESC 키로 닫기
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') closeModal();
@@ -535,27 +535,27 @@ function initializeModal() {
 function openDistrictModal(districtId) {
     const overlay = document.getElementById('modal-overlay');
     const data = seoulDistrictData[districtId];
-    
+
     if (!data) return;
-    
+
     // 타이틀 설정
     const periodLabels = { weekly: '주간', monthly: '월간', yearly: '연간' };
-    document.getElementById('modal-title').textContent = 
+    document.getElementById('modal-title').textContent =
         `${data.name} ${periodLabels[currentPeriod]} 상승률 추이`;
-    
+
     // 통계 설정
     const periodData = data[currentPeriod];
     const allValues = [...periodData.history, periodData.current];
-    
+
     document.getElementById('modal-current').textContent = `+${periodData.current.toFixed(2)}%`;
-    document.getElementById('modal-avg').textContent = 
+    document.getElementById('modal-avg').textContent =
         `+${(allValues.reduce((a, b) => a + b, 0) / allValues.length).toFixed(2)}%`;
     document.getElementById('modal-max').textContent = `+${Math.max(...allValues).toFixed(2)}%`;
     document.getElementById('modal-min').textContent = `+${Math.min(...allValues).toFixed(2)}%`;
-    
+
     // 차트 그리기
     drawTrendChart(data.name, periodData);
-    
+
     // 모달 표시
     overlay.classList.add('visible');
 }
@@ -563,7 +563,7 @@ function openDistrictModal(districtId) {
 function closeModal() {
     const overlay = document.getElementById('modal-overlay');
     overlay.classList.remove('visible');
-    
+
     if (trendChart) {
         trendChart.destroy();
         trendChart = null;
@@ -575,14 +575,14 @@ function closeModal() {
 // ========================================
 function drawTrendChart(districtName, periodData) {
     const ctx = document.getElementById('trend-chart').getContext('2d');
-    
+
     if (trendChart) {
         trendChart.destroy();
     }
-    
+
     const labels = getChartLabels();
     const data = [...periodData.history, periodData.current];
-    
+
     trendChart = new Chart(ctx, {
         type: 'line',
         data: {
@@ -648,7 +648,7 @@ function drawTrendChart(districtName, periodData) {
 function getChartLabels() {
     const now = new Date();
     const labels = [];
-    
+
     if (currentPeriod === 'weekly') {
         for (let i = 5; i >= 0; i--) {
             const weekNum = getWeekNumber(new Date(now - i * 7 * 24 * 60 * 60 * 1000));
@@ -664,7 +664,7 @@ function getChartLabels() {
             labels.push(`${now.getFullYear() - i}년`);
         }
     }
-    
+
     return labels;
 }
 
