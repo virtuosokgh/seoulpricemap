@@ -278,6 +278,7 @@ function processROneData(rows: any[]): Record<string, any> {
     const processed: Record<string, any> = {};
     const districtNameMapping: Record<string, string> = {
         "서울특별시": "seoul_avg",
+        "서울": "seoul_avg",
         "강남구": "gangnam",
         "강동구": "gangdong",
         "강북구": "gangbuk",
@@ -305,18 +306,41 @@ function processROneData(rows: any[]): Record<string, any> {
         "중랑구": "jungnang",
     };
 
+    console.log(`Processing ${rows.length} rows from R-ONE API`);
+
     for (const row of rows) {
-        const regionName = row.CL_NM || row.WRTTIME_IDTFR_ID;
-        const districtId = districtNameMapping[regionName];
+        // 다양한 필드명에서 지역명 추출 시도
+        const regionName = row.CL_NM || row.REGION_NM || row.ITEM_NM || row.WRTTIME_IDTFR_ID || "";
+
+        // 다양한 필드명에서 값 추출 시도
+        const value = row.DATA_VALUE || row.DT || row.DATA || row.VALUE || "0";
+        const period = row.TIME || row.PRD_DE || row.PERIOD || new Date().toISOString().split('T')[0];
+
+        console.log(`Row: region=${regionName}, value=${value}, period=${period}`);
+
+        // 지역명에서 구 이름 찾기
+        let districtId = districtNameMapping[regionName];
+
+        // 정확히 매칭되지 않으면 포함 여부 확인
+        if (!districtId) {
+            for (const [name, id] of Object.entries(districtNameMapping)) {
+                if (regionName.includes(name) || name.includes(regionName)) {
+                    districtId = id;
+                    break;
+                }
+            }
+        }
 
         if (districtId && districtId !== "seoul_avg") {
             processed[districtId] = {
-                rate: parseFloat(row.DT || row.DATA || 0),
-                period: row.PRD_DE || row.TIME || new Date().toISOString().split('T')[0],
+                rate: parseFloat(value) || 0,
+                period: period,
             };
+            console.log(`Mapped: ${regionName} -> ${districtId} = ${value}`);
         }
     }
 
+    console.log(`Processed ${Object.keys(processed).length} districts`);
     return processed;
 }
 
