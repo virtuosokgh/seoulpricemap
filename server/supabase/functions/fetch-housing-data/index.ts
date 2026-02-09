@@ -76,32 +76,70 @@ serve(async (req: Request) => {
         }
 
         if (action === "sync-data") {
-            // 외부 API에서 데이터를 가져와 DB에 저장
-            const apiData = await fetchRealEstateData();
+            // 주간, 월간, 연간 데이터 모두 가져오기
+            const results = {
+                weekly: await fetchRealEstateDataByPeriod("weekly"),
+                monthly: await fetchRealEstateDataByPeriod("monthly"),
+                yearly: await fetchRealEstateDataByPeriod("yearly"),
+            };
 
-            if (!apiData || Object.keys(apiData).length === 0) {
+            const now = new Date();
+            const allInsertData: any[] = [];
+
+            // 주간 데이터 처리
+            if (results.weekly && Object.keys(results.weekly).length > 0) {
+                const weekNum = Math.ceil((now.getDate() + new Date(now.getFullYear(), now.getMonth(), 1).getDay()) / 7);
+                const weeklyPeriod = `${now.getFullYear()}-W${String(weekNum).padStart(2, '0')}`;
+
+                Object.entries(results.weekly).forEach(([districtId, info]: [string, any]) => {
+                    allInsertData.push({
+                        district_id: districtId,
+                        period_type: 'weekly',
+                        period_value: weeklyPeriod,
+                        rate: info.rate
+                    });
+                });
+            }
+
+            // 월간 데이터 처리
+            if (results.monthly && Object.keys(results.monthly).length > 0) {
+                const monthlyPeriod = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+                Object.entries(results.monthly).forEach(([districtId, info]: [string, any]) => {
+                    allInsertData.push({
+                        district_id: districtId,
+                        period_type: 'monthly',
+                        period_value: monthlyPeriod,
+                        rate: info.rate
+                    });
+                });
+            }
+
+            // 연간 데이터 처리
+            if (results.yearly && Object.keys(results.yearly).length > 0) {
+                const yearlyPeriod = `${now.getFullYear()}`;
+
+                Object.entries(results.yearly).forEach(([districtId, info]: [string, any]) => {
+                    allInsertData.push({
+                        district_id: districtId,
+                        period_type: 'yearly',
+                        period_value: yearlyPeriod,
+                        rate: info.rate
+                    });
+                });
+            }
+
+            if (allInsertData.length === 0) {
                 return new Response(JSON.stringify({ success: false, error: "No data from API" }), {
                     headers: { ...corsHeaders, "Content-Type": "application/json" },
                     status: 200,
                 });
             }
 
-            // 현재 주차 계산
-            const now = new Date();
-            const weekNum = Math.ceil((now.getDate() + new Date(now.getFullYear(), now.getMonth(), 1).getDay()) / 7);
-            const periodValue = `${now.getFullYear()}-W${String(weekNum).padStart(2, '0')}`;
-
             // DB에 저장
-            const insertData = Object.entries(apiData).map(([districtId, info]: [string, any]) => ({
-                district_id: districtId,
-                period_type: 'weekly',
-                period_value: periodValue,
-                rate: info.rate
-            }));
-
             const { error: insertError } = await supabaseClient
                 .from('housing_prices')
-                .upsert(insertData, { onConflict: 'district_id,period_type,period_value' });
+                .upsert(allInsertData, { onConflict: 'district_id,period_type,period_value' });
 
             if (insertError) {
                 console.error("Insert error:", insertError);
@@ -113,8 +151,8 @@ serve(async (req: Request) => {
 
             return new Response(JSON.stringify({
                 success: true,
-                message: `Synced ${insertData.length} districts for ${periodValue}`,
-                data: apiData
+                message: `Synced ${allInsertData.length} records (weekly: ${Object.keys(results.weekly || {}).length}, monthly: ${Object.keys(results.monthly || {}).length}, yearly: ${Object.keys(results.yearly || {}).length})`,
+                data: results
             }), {
                 headers: { ...corsHeaders, "Content-Type": "application/json" },
                 status: 200,
@@ -181,42 +219,58 @@ serve(async (req: Request) => {
     }
 });
 
-// 부동산통계정보시스템 API에서 데이터 가져오기
-async function fetchRealEstateData() {
+// 기간별 STATBL_ID 매핑
+const PERIOD_STATBL_IDS: Record<string, string> = {
+    weekly: "T244183132827305",   // 주간 아파트 매매가격 변동률
+    monthly: "A_2024_00045",      // 월간 아파트 매매가격 변동률
+    yearly: "A_2024_00045",       // 연간은 월간 ID 사용 (별도 ID 없으면)
+};
+
+// 기간별 부동산통계정보시스템 API에서 데이터 가져오기
+async function fetchRealEstateDataByPeriod(periodType: "weekly" | "monthly" | "yearly") {
     try {
-        // R-ONE API 엔드포인트 (주택가격동향조사)
-        // 주간 아파트 매매가격지수 변동률 - STATBL_ID 확인 필요
         const baseUrl = "https://www.reb.or.kr/r-one/openapi/SttsApiTbl.do";
+        const statblId = PERIOD_STATBL_IDS[periodType];
 
         const params = new URLSearchParams({
             KEY: RONE_API_KEY,
             Type: "json",
             pIndex: "1",
             pSize: "100",
-            STATBL_ID: "T_한국부동산원_주간아파트매매가격변동률_시도",  // 주간 아파트 매매가격 변동률
+            STATBL_ID: statblId,
         });
 
-        console.log("Calling R-ONE API:", `${baseUrl}?${params}`);
+        console.log(`Calling R-ONE API for ${periodType}:`, `${baseUrl}?KEY=***&Type=json&STATBL_ID=${statblId}`);
         const response = await fetch(`${baseUrl}?${params}`);
 
         if (!response.ok) {
-            console.log("R-ONE API response not ok:", response.status);
+            console.log(`R-ONE API response not ok for ${periodType}:`, response.status);
             throw new Error(`API request failed: ${response.status}`);
         }
 
         const data = await response.json();
-        console.log("R-ONE API response:", JSON.stringify(data).substring(0, 500));
+        console.log(`R-ONE API ${periodType} response:`, JSON.stringify(data).substring(0, 300));
 
         if (data && data.SttsApiTbl && data.SttsApiTbl[1] && data.SttsApiTbl[1].row) {
             return processROneData(data.SttsApiTbl[1].row);
         }
 
-        throw new Error("No data from R-ONE API");
+        // 데이터 구조가 다를 수 있음
+        if (data && data.row) {
+            return processROneData(data.row);
+        }
+
+        console.log(`No data found for ${periodType}`);
+        return null;
     } catch (error) {
-        console.error("Failed to fetch from R-ONE API:", error);
-        // Fallback: 공공데이터포털 API 시도
-        return fetchFromDataGoKr();
+        console.error(`Failed to fetch ${periodType} from R-ONE API:`, error);
+        return null;
     }
+}
+
+// 기존 함수 유지 (호환성)
+async function fetchRealEstateData() {
+    return fetchRealEstateDataByPeriod("weekly");
 }
 
 // R-ONE API 데이터 처리
