@@ -327,12 +327,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (typeof supabase !== 'undefined') {
         supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // 외부 API에서 최신 데이터 동기화 시도
-        try {
-            await syncFromExternalAPI();
-        } catch (e) {
-            console.log('외부 API 동기화 건너뜀, DB 데이터 사용');
-        }
+        // 외부 API에서 최신 데이터 동기화 시도 (실패해도 무시)
+        syncFromExternalAPI().catch(() => { });
 
         // Supabase에서 실데이터 로드
         await loadDataFromSupabase();
