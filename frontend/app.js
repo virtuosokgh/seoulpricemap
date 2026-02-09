@@ -326,7 +326,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Supabase 클라이언트 초기화
     if (typeof supabase !== 'undefined') {
         supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        // Supabase에서 실데이터 로드 시도
+
+        // 외부 API에서 최신 데이터 동기화 시도
+        try {
+            await syncFromExternalAPI();
+        } catch (e) {
+            console.log('외부 API 동기화 건너뜀, DB 데이터 사용');
+        }
+
+        // Supabase에서 실데이터 로드
         await loadDataFromSupabase();
     }
 
