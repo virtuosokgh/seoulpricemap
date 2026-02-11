@@ -671,6 +671,8 @@ async function loadDataFromSupabase() {
         if (districts && districts.length > 0 && prices && prices.length > 0) {
             updateDistrictData(districts, prices);
             isDataLoaded = true;
+            // 로드 직후 화면 강제 업데이트
+            updateDisplay();
         }
     } catch (error) {
         console.error('Error loading data from Supabase:', error);
@@ -694,13 +696,18 @@ function updateDistrictData(districts, prices) {
         if (districtPrices && seoulDistrictData[district.id]) {
             ['weekly', 'monthly', 'yearly'].forEach(period => {
                 if (districtPrices[period] && districtPrices[period].length > 0) {
-                    // Supabase에서 내림차순(최신순)으로 가져왔으므로, 
-                    // 차트에 그리기 위해 다시 뒤집어서(과거->현재순) 저장
-                    const rates = districtPrices[period].slice(0, 6).reverse();
+                    // Supabase에서 내림차순(최신순)으로 가져왔으므로 뒤집어서 정렬
+                    const dbRates = districtPrices[period].slice(0, 6).reverse();
 
-                    // 마지막 데이터가 현재 값, 그 앞의 데이터들이 히스토리
-                    seoulDistrictData[district.id][period].current = rates[rates.length - 1] || 0;
-                    seoulDistrictData[district.id][period].history = rates.slice(0, -1);
+                    // 핵심 로직: DB 데이터가 부족한 경우(예: 1개) 기존 히스토리를 유지
+                    if (dbRates.length === 1) {
+                        seoulDistrictData[district.id][period].current = dbRates[0];
+                        // history는 건드리지 않고 기존(하드코딩된) 데이터 유지
+                    } else {
+                        // DB 데이터가 2개 이상이면 점진적으로 히스토리도 DB 데이터로 교체
+                        seoulDistrictData[district.id][period].current = dbRates[dbRates.length - 1];
+                        seoulDistrictData[district.id][period].history = dbRates.slice(0, -1);
+                    }
                 }
             });
         }
