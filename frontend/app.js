@@ -618,6 +618,7 @@ function drawTrendChart(districtName, periodData) {
 }
 
 function getChartLabels() {
+    // 실시간 날짜 기반으로 라벨 생성 (데이터 동기화 시점 기준)
     const now = new Date();
     const labels = [];
 
