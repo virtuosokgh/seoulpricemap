@@ -18,126 +18,128 @@
 <body>
     <div class="app-container">
         <!-- Main Content -->
-        <main class="main-content">
-            <!-- Left Panel: Map & Detail -->
-            <div class="left-panel">
-                <section class="map-section">
-                    <div class="section-header">
-                        <h2>서울시 구별 상승률</h2>
-                        <div class="period-tabs">
-                            <button class="tab-btn active" data-period="weekly">주간</button>
-                            <button class="tab-btn" data-period="monthly">월간</button>
-                            <button class="tab-btn" data-period="yearly">연간</button>
-                        </div>
+        <!-- Main Content: Vertical Stack for Maximum Width -->
+        <div class="main-stack">
+            <section class="map-section">
+                <div class="section-header">
+                    <h2>서울시 구별 상승률</h2>
+                    <div class="period-tabs">
+                        <button class="tab-btn active" data-period="weekly">주간</button>
+                        <button class="tab-btn" data-period="monthly">월간</button>
+                        <button class="tab-btn" data-period="yearly">연간</button>
+                    </div>
+                </div>
+
+                <div class="map-container">
+                    <div class="map-wrapper" id="seoul-map">
+                        <!-- SVG Map will be inserted here -->
                     </div>
 
-                    <div class="map-container">
-                        <div class="map-wrapper" id="seoul-map">
-                            <!-- SVG Map will be inserted here -->
-                        </div>
+                    <!-- Tooltip -->
+                    <div class="map-tooltip" id="map-tooltip">
+                        <div class="tooltip-title"></div>
+                        <div class="tooltip-value"></div>
+                    </div>
+                </div>
 
-                        <!-- Tooltip -->
-                        <div class="map-tooltip" id="map-tooltip">
-                            <div class="tooltip-title"></div>
-                            <div class="tooltip-value"></div>
+                <!-- Legend -->
+                <div class="legend">
+                    <div class="legend-title">상승률 범례</div>
+                    <div class="legend-scale">
+                        <div class="legend-item">
+                            <span class="legend-color" style="background: #1a5fb4"></span>
+                            <span>-1.0% 이하</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color" style="background: #3584e4"></span>
+                            <span>-0.5%</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color" style="background: #99c1f1"></span>
+                            <span>-0.1%</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color" style="background: #f6f5f4"></span>
+                            <span>0%</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color" style="background: #f8e45c"></span>
+                            <span>+0.1%</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color" style="background: #ff7800"></span>
+                            <span>+0.5%</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color" style="background: #e01b24"></span>
+                            <span>+1.0% 이상</span>
                         </div>
                     </div>
+                </div>
+            </section>
 
-                    <!-- Legend -->
-                    <div class="legend">
-                        <div class="legend-title">상승률 범례</div>
-                        <div class="legend-scale">
-                            <div class="legend-item">
-                                <span class="legend-color" style="background: #1a5fb4"></span>
-                                <span>-1.0% 이하</span>
-                            </div>
-                            <div class="legend-item">
-                                <span class="legend-color" style="background: #3584e4"></span>
-                                <span>-0.5%</span>
-                            </div>
-                            <div class="legend-item">
-                                <span class="legend-color" style="background: #99c1f1"></span>
-                                <span>-0.1%</span>
-                            </div>
-                            <div class="legend-item">
-                                <span class="legend-color" style="background: #f6f5f4"></span>
-                                <span>0%</span>
-                            </div>
-                            <div class="legend-item">
-                                <span class="legend-color" style="background: #f8e45c"></span>
-                                <span>+0.1%</span>
-                            </div>
-                            <div class="legend-item">
-                                <span class="legend-color" style="background: #ff7800"></span>
-                                <span>+0.5%</span>
-                            </div>
-                            <div class="legend-item">
-                                <span class="legend-color" style="background: #e01b24"></span>
-                                <span>+1.0% 이상</span>
-                            </div>
+            <!-- Detail Trend Card (Appears Below Map) -->
+            <div class="stats-card detail-trend-card" id="detail-trend-card" style="display: none;">
+                <div class="detail-header">
+                    <h3 id="detail-title">상승률 추이</h3>
+                    <button class="close-btn" id="detail-close">&times;</button>
+                </div>
+                <div class="detail-body">
+                    <div class="chart-section">
+                        <div class="chart-container">
+                            <canvas id="trend-chart"></canvas>
                         </div>
                     </div>
-                </section>
-
-                <!-- Detail Trend Card: Appears here (Below Map) -->
-                <div class="stats-card detail-trend-card" id="detail-trend-card" style="display: none;">
-                    <div class="detail-header">
-                        <h3 id="detail-title">상승률 추이</h3>
-                        <button class="close-btn" id="detail-close">&times;</button>
-                    </div>
-                    <div class="detail-body">
-                        <div class="chart-section">
-                            <div class="chart-container">
-                                <canvas id="trend-chart"></canvas>
-                            </div>
+                    <div class="modal-stats">
+                        <div class="modal-stat">
+                            <span class="stat-label">현재</span>
+                            <span class="stat-value" id="detail-current">0.00%</span>
                         </div>
-                        <div class="modal-stats"> <!-- Reusing modal-stat classes for consistency -->
-                            <div class="modal-stat">
-                                <span class="stat-label">현재</span>
-                                <span class="stat-value" id="detail-current">0.00%</span>
-                            </div>
-                            <div class="modal-stat">
-                                <span class="stat-label">평균</span>
-                                <span class="stat-value" id="detail-avg">0.00%</span>
-                            </div>
-                            <div class="modal-stat">
-                                <span class="stat-label">최고</span>
-                                <span class="stat-value" id="detail-max">0.00%</span>
-                            </div>
-                            <div class="modal-stat">
-                                <span class="stat-label">최저</span>
-                                <span class="stat-value" id="detail-min">0.00%</span>
-                            </div>
+                        <div class="modal-stat">
+                            <span class="stat-label">평균</span>
+                            <span class="stat-value" id="detail-avg">0.00%</span>
+                        </div>
+                        <div class="modal-stat">
+                            <span class="stat-label">최고</span>
+                            <span class="stat-value" id="detail-max">0.00%</span>
+                        </div>
+                        <div class="modal-stat">
+                            <span class="stat-label">최저</span>
+                            <span class="stat-value" id="detail-min">0.00%</span>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Right Panel: Stats (Simplified) -->
-            <aside class="stats-section">
-                <!-- Average Card: Top -->
+            <!-- Stats Grid (Previous Sidebar Info) -->
+            <div class="stats-grid">
+                <!-- Average Card -->
                 <div class="stats-card average" id="average-card">
                     <div class="average-header">
                         <span class="average-icon">📊</span>
                         <h3>서울 평균</h3>
                     </div>
-                    <p class="average-value" id="average-value">0.00%</p>
-                    <p class="average-label" id="average-label">주간 평균 상승률</p>
+                    <div class="average-content">
+                        <p class="average-value" id="average-value">0.00%</p>
+                        <p class="average-label" id="average-label">주간 평균 상승률</p>
+                    </div>
                 </div>
 
-                <!-- Top 5 Sections (High Density) -->
+                <!-- Top 5 Increase -->
                 <div class="stats-card top-increase">
                     <h3>🔥 상승률 TOP 5</h3>
                     <ul class="stats-list" id="top-increase-list">
                     </ul>
                 </div>
 
+                <!-- Top 5 Decrease -->
                 <div class="stats-card top-decrease">
                     <h3>📉 하락률 TOP 5</h3>
                     <ul class="stats-list" id="top-decrease-list">
                     </ul>
                 </div>
-            </aside>
+            </div>
+        </div>
         </main>
     </div>
 
