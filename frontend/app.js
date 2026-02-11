@@ -421,17 +421,8 @@ function updateStats() {
         }))
         .sort((a, b) => b.rate - a.rate);
 
-    // 구별 상세 내역 (전체 리스트 - Seamless)
-    const statsList = document.getElementById('stats-list');
-    if (statsList) {
-        statsList.innerHTML = sortedData
-            .map(d => `
-                <li onclick="handleDistrictClick('${d.id}')">
-                    <span class="district-name">${d.name}</span>
-                    <span class="rate ${d.rate >= 0 ? 'positive' : 'negative'}">${d.rate >= 0 ? '+' : ''}${d.rate.toFixed(2)}%</span>
-                </li>
-            `).join('');
-    }
+    // 구별 상세 내역 (전체 리스트 - 제거됨)
+    // const statsList = document.getElementById('stats-list');
 
     // 상승률 TOP 5
     const topIncreaseList = document.getElementById('top-increase-list');
@@ -462,8 +453,6 @@ function updateStats() {
     const avgEl = document.getElementById('average-value');
     if (avgEl) {
         avgEl.textContent = `${average >= 0 ? '+' : ''}${average.toFixed(2)}%`;
-        // 클래스는 styles.css에서 이미 처리되거나 JS에서 상위 카드 색상을 바꿀 수도 있음
-        // 지금은 값 자체의 컬러는 styles.css의 .average-value에서 처리
     }
 }
 
@@ -552,11 +541,13 @@ function openDistrictModal(districtId) {
     const periodData = data[currentPeriod];
     const allValues = [...periodData.history, periodData.current];
 
-    document.getElementById('modal-current').textContent = `+${periodData.current.toFixed(2)}%`;
+    const formatRate = (val) => `${val >= 0 ? '+' : ''}${val.toFixed(2)}%`;
+
+    document.getElementById('modal-current').textContent = formatRate(periodData.current);
     document.getElementById('modal-avg').textContent =
-        `+${(allValues.reduce((a, b) => a + b, 0) / allValues.length).toFixed(2)}%`;
-    document.getElementById('modal-max').textContent = `+${Math.max(...allValues).toFixed(2)}%`;
-    document.getElementById('modal-min').textContent = `+${Math.min(...allValues).toFixed(2)}%`;
+        formatRate(allValues.reduce((a, b) => a + b, 0) / allValues.length);
+    document.getElementById('modal-max').textContent = formatRate(Math.max(...allValues));
+    document.getElementById('modal-min').textContent = formatRate(Math.min(...allValues));
 
     // 차트 그리기
     drawTrendChart(data.name, periodData);
@@ -593,35 +584,31 @@ function drawTrendChart(districtName, periodData) {
         data: {
             labels: labels,
             datasets: [{
-                label: `${districtName} 상승률`,
+                label: '상승률',
                 data: data,
-                borderColor: '#58a6ff',
-                backgroundColor: 'rgba(88, 166, 255, 0.1)',
+                borderColor: '#3182f6',
+                backgroundColor: 'rgba(49, 130, 246, 0.1)',
                 borderWidth: 3,
-                fill: true,
-                tension: 0.4,
-                pointBackgroundColor: '#58a6ff',
-                pointBorderColor: '#fff',
+                pointBackgroundColor: '#ffffff',
+                pointBorderColor: '#3182f6',
                 pointBorderWidth: 2,
                 pointRadius: 6,
-                pointHoverRadius: 8
+                pointHoverRadius: 8,
+                fill: true,
+                tension: 0.4
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
             animation: {
-                duration: 1000,
+                duration: 1200,
                 easing: 'easeOutQuart'
             },
             plugins: {
-                legend: {
-                    display: false
-                },
+                legend: { display: false },
                 tooltip: {
                     backgroundColor: '#191f28',
-                    titleFont: { size: 14, weight: 'bold' },
-                    bodyFont: { size: 13 },
                     padding: 12,
                     cornerRadius: 12,
                     displayColors: false,
@@ -632,19 +619,11 @@ function drawTrendChart(districtName, periodData) {
             },
             scales: {
                 x: {
-                    grid: {
-                        display: false
-                    },
-                    ticks: {
-                        color: '#8b95a1',
-                        font: { size: 12, weight: '500' }
-                    }
+                    grid: { display: false },
+                    ticks: { color: '#8b95a1', font: { size: 12, weight: '500' } }
                 },
                 y: {
-                    grid: {
-                        color: '#f2f4f6',
-                        drawBorder: false
-                    },
+                    grid: { color: '#f2f4f6', drawBorder: false },
                     ticks: {
                         color: '#8b95a1',
                         font: { size: 12 },
