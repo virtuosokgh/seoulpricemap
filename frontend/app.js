@@ -367,14 +367,20 @@ function getColorForRate(rate, period) {
 
     const normalizedRate = rate * scale;
 
-    if (normalizedRate <= -0.15) return '#dae9ff';
-    if (normalizedRate <= -0.05) return '#ebf4ff';
-    if (normalizedRate <= -0.01) return '#f2f8ff';
-    if (normalizedRate <= 0.01) return '#f9fafb';
-    if (normalizedRate <= 0.05) return '#fff5f5';
-    if (normalizedRate <= 0.10) return '#ffe3e3';
-    if (normalizedRate <= 0.15) return '#ffc9c9';
-    return '#ffb3b3';
+    // 11단계 고대비 Diverging Palette (Deep Blue -> White -> Deep Red)
+    if (normalizedRate <= -0.20) return '#004182'; // Deep Blue (하락폭 큼)
+    if (normalizedRate <= -0.10) return '#1a5fb4'; // Blue
+    if (normalizedRate <= -0.05) return '#3584e4'; // Medium Blue
+    if (normalizedRate <= -0.02) return '#99c1f1'; // Light Blue
+    if (normalizedRate <= -0.01) return '#dae9ff'; // Very Light Blue
+
+    if (normalizedRate < 0.01) return '#f6f5f4';  // Neutral (보합)
+
+    if (normalizedRate < 0.03) return '#fff5f5';  // Very Light Red
+    if (normalizedRate < 0.06) return '#ffc9c9';  // Light Red
+    if (normalizedRate < 0.12) return '#ff7800';  // Orange/Red
+    if (normalizedRate < 0.20) return '#e01b24';  // Red
+    return '#a51d2d';                             // Deep Red (상승폭 큼)
 }
 
 // ========================================
