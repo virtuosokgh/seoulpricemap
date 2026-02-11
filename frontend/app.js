@@ -684,7 +684,9 @@ function updateDistrictData(districts, prices) {
         if (!pricesByDistrict[price.district_id]) {
             pricesByDistrict[price.district_id] = { weekly: [], monthly: [], yearly: [] };
         }
-        pricesByDistrict[price.district_id][price.period_type].push(parseFloat(price.rate));
+        // parseFloat 결과가 NaN인 경우 0으로 방어적 처리
+        const rate = parseFloat(price.rate);
+        pricesByDistrict[price.district_id][price.period_type].push(isNaN(rate) ? 0 : rate);
     });
 
     districts.forEach(district => {
@@ -692,9 +694,13 @@ function updateDistrictData(districts, prices) {
         if (districtPrices && seoulDistrictData[district.id]) {
             ['weekly', 'monthly', 'yearly'].forEach(period => {
                 if (districtPrices[period] && districtPrices[period].length > 0) {
-                    const rates = districtPrices[period].slice(0, 6);
-                    seoulDistrictData[district.id][period].current = rates[0] || 0;
-                    seoulDistrictData[district.id][period].history = rates.slice(1, 6);
+                    // Supabase에서 내림차순(최신순)으로 가져왔으므로, 
+                    // 차트에 그리기 위해 다시 뒤집어서(과거->현재순) 저장
+                    const rates = districtPrices[period].slice(0, 6).reverse();
+
+                    // 마지막 데이터가 현재 값, 그 앞의 데이터들이 히스토리
+                    seoulDistrictData[district.id][period].current = rates[rates.length - 1] || 0;
+                    seoulDistrictData[district.id][period].history = rates.slice(0, -1);
                 }
             });
         }
