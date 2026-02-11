@@ -199,7 +199,7 @@ const seoulDistrictData = {
 // 서울 지도 SVG 데이터 (라벨 구조 개선)
 // ========================================
 const seoulMapSVG = `
-<svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+<svg viewBox="0 0 680 620" xmlns="http://www.w3.org/2000/svg">
     <defs>
         <filter id="glow">
             <feGaussianBlur stdDeviation="2" result="coloredBlur"/>

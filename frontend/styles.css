@@ -192,6 +192,8 @@ body {
     max-width: 1100px;
     /* Increased from 900px */
     display: flex;
+    justify-content: center;
+    /* Centering the SVG content */
     align-items: center;
 }
 
@@ -563,9 +565,9 @@ body {
 
     .map-wrapper {
         max-width: 100%;
-        transform: scale(1.05);
+        transform: scale(1.1);
         /* Slight zoom for mobile readability */
-        transform-origin: center top;
+        transform-origin: center center;
     }
 
     .tab-btn {
