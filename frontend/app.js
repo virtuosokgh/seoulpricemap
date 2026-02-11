@@ -367,20 +367,21 @@ function getColorForRate(rate, period) {
 
     const normalizedRate = rate * scale;
 
-    // 11단계 고대비 Diverging Palette (Deep Blue -> White -> Deep Red)
-    if (normalizedRate <= -0.20) return '#004182'; // Deep Blue (하락폭 큼)
-    if (normalizedRate <= -0.10) return '#1a5fb4'; // Blue
-    if (normalizedRate <= -0.05) return '#3584e4'; // Medium Blue
-    if (normalizedRate <= -0.02) return '#99c1f1'; // Light Blue
-    if (normalizedRate <= -0.01) return '#dae9ff'; // Very Light Blue
+    // 11단계 소프트 파스텔 Diverging Palette (Soft Blue -> Soft Gray -> Soft Red)
+    // 눈의 피로도를 줄이면서도 구분감을 유지하는 색상 체계
+    if (normalizedRate <= -0.20) return '#4A90E2'; // Calm Navy
+    if (normalizedRate <= -0.10) return '#6FA3EF'; // Soft Blue
+    if (normalizedRate <= -0.05) return '#99C2F6'; // Light Blue
+    if (normalizedRate <= -0.02) return '#C2D9FB'; // Sky Blue
+    if (normalizedRate <= -0.01) return '#E1ECFD'; // Pale Blue
 
-    if (normalizedRate < 0.01) return '#f6f5f4';  // Neutral (보합)
+    if (normalizedRate < 0.01) return '#F1F3F5';  // Neutral Gray (보합)
 
-    if (normalizedRate < 0.03) return '#fff5f5';  // Very Light Red
-    if (normalizedRate < 0.06) return '#ffc9c9';  // Light Red
-    if (normalizedRate < 0.12) return '#ff7800';  // Orange/Red
-    if (normalizedRate < 0.20) return '#e01b24';  // Red
-    return '#a51d2d';                             // Deep Red (상승폭 큼)
+    if (normalizedRate < 0.03) return '#FFF0F0';  // Pale Red
+    if (normalizedRate < 0.06) return '#FFD8D8';  // Light Pink
+    if (normalizedRate < 0.12) return '#FFADAD';  // Soft Coral
+    if (normalizedRate < 0.20) return '#FF8787';  // Warm Red
+    return '#E64980';                             // Soft Deep Red
 }
 
 // ========================================
