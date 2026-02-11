@@ -178,16 +178,28 @@ body {
     background: var(--toss-gray-50);
     border-radius: var(--border-radius-md);
     margin: 24px 0;
-    padding: 20px;
+    padding: 0;
+    /* Removed padding for larger map */
     display: flex;
     justify-content: center;
     position: relative;
     overflow: hidden;
+    min-height: 400px;
+    /* Ensure space on mobile */
 }
 
 .map-wrapper {
     width: 100%;
-    max-width: 700px;
+    max-width: 900px;
+    /* Increased from 700px */
+    display: flex;
+    align-items: center;
+}
+
+.map-wrapper svg {
+    width: 100%;
+    height: auto;
+    filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.03));
 }
 
 .map-wrapper svg path.district {
@@ -202,22 +214,7 @@ body {
     stroke-width: 2.5;
 }
 
-/* Labels on Map */
-.district-labels text {
-    fill: var(--toss-gray-900);
-    font-weight: 700;
-    font-size: 11px;
-    paint-order: stroke;
-    stroke: rgba(255, 255, 255, 0.8);
-    stroke-width: 3px;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-}
-
-.district-rate {
-    font-weight: 600;
-    font-size: 10px;
-}
+/* Labels removed */
 
 /* Legend */
 .legend {
@@ -517,6 +514,15 @@ body {
 
     .period-tabs {
         width: 100%;
+    }
+
+    .map-container {
+        margin: 16px 0;
+        min-height: 320px;
+    }
+
+    .map-wrapper {
+        max-width: 100%;
     }
 
     .tab-btn {

@@ -237,34 +237,7 @@ const seoulMapSVG = `
     <path id="songpa" class="district" d="M500 350 L560 340 L610 380 L620 440 L580 490 L520 500 L490 500 L520 440 L500 380 Z"/>
     <path id="gangdong" class="district" d="M520 300 L580 280 L640 310 L660 370 L610 380 L560 340 L500 350 Z"/>
     
-    <!-- 구 이름 및 상승률 라벨 -->
-    <g class="district-labels" font-family="Noto Sans KR" text-anchor="middle" pointer-events="none">
-        <text x="410" y="55" id="label-dobong">도봉구<tspan x="410" dy="12" class="district-rate">0.00%</tspan></text>
-        <text x="335" y="100" id="label-gangbuk">강북구<tspan x="335" dy="12" class="district-rate">0.00%</tspan></text>
-        <text x="495" y="95" id="label-nowon">노원구<tspan x="495" dy="12" class="district-rate">0.00%</tspan></text>
-        <text x="225" y="145" id="label-eunpyeong">은평구<tspan x="225" dy="12" class="district-rate">0.00%</tspan></text>
-        <text x="345" y="185" id="label-seongbuk">성북구<tspan x="345" dy="12" class="district-rate">0.00%</tspan></text>
-        <text x="255" y="240" id="label-jongno">종로구<tspan x="255" dy="12" class="district-rate">0.00%</tspan></text>
-        <text x="495" y="205" id="label-jungnang">중랑구<tspan x="495" dy="12" class="district-rate">0.00%</tspan></text>
-        <text x="400" y="225" id="label-dongdaemun">동대문<tspan x="400" dy="12" class="district-rate">0.00%</tspan></text>
-        <text x="165" y="240" id="label-seodaemun">서대문<tspan x="165" dy="12" class="district-rate">0.00%</tspan></text>
-        <text x="275" y="315" id="label-jung">중구<tspan x="275" dy="12" class="district-rate">0.00%</tspan></text>
-        <text x="120" y="310" id="label-mapo">마포구<tspan x="120" dy="12" class="district-rate">0.00%</tspan></text>
-        <text x="465" y="310" id="label-gwangjin">광진구<tspan x="465" dy="12" class="district-rate">0.00%</tspan></text>
-        <text x="360" y="325" id="label-seongdong">성동구<tspan x="360" dy="12" class="district-rate">0.00%</tspan></text>
-        <text x="185" y="355" id="label-yongsan">용산구<tspan x="185" dy="12" class="district-rate">0.00%</tspan></text>
-        <text x="60" y="405" id="label-gangseo">강서구<tspan x="60" dy="12" class="district-rate">0.00%</tspan></text>
-        <text x="130" y="475" id="label-yangcheon">양천구<tspan x="130" dy="12" class="district-rate">0.00%</tspan></text>
-        <text x="165" y="415" id="label-yeongdeungpo">영등포<tspan x="165" dy="12" class="district-rate">0.00%</tspan></text>
-        <text x="250" y="415" id="label-dongjak">동작구<tspan x="250" dy="12" class="district-rate">0.00%</tspan></text>
-        <text x="110" y="555" id="label-guro">구로구<tspan x="110" dy="12" class="district-rate">0.00%</tspan></text>
-        <text x="200" y="545" id="label-geumcheon">금천구<tspan x="200" dy="12" class="district-rate">0.00%</tspan></text>
-        <text x="275" y="510" id="label-gwanak">관악구<tspan x="275" dy="12" class="district-rate">0.00%</tspan></text>
-        <text x="360" y="475" id="label-seocho">서초구<tspan x="360" dy="12" class="district-rate">0.00%</tspan></text>
-        <text x="450" y="435" id="label-gangnam">강남구<tspan x="450" dy="12" class="district-rate">0.00%</tspan></text>
-        <text x="560" y="420" id="label-songpa">송파구<tspan x="560" dy="12" class="district-rate">0.00%</tspan></text>
-        <text x="590" y="335" id="label-gangdong">강동구<tspan x="590" dy="12" class="district-rate">0.00%</tspan></text>
-    </g>
+    <!-- Labels removed for minimal UI -->
 </svg>
 `;
 
@@ -342,15 +315,6 @@ function colorizeMap() {
             const rate = data[currentPeriod].current;
             const color = getColorForRate(rate, currentPeriod);
             district.style.fill = color;
-
-            // 라벨 업데이트 (상승률 표시)
-            const label = document.getElementById(`label-${districtId}`);
-            if (label) {
-                const rateSpan = label.querySelector('.district-rate');
-                if (rateSpan) {
-                    rateSpan.textContent = `${rate >= 0 ? '+' : ''}${rate.toFixed(2)}%`;
-                }
-            }
         }
     });
 }
