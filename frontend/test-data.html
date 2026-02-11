@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>데이터 로딩 테스트 - 서울 집값 대시보드</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background: #0d1117;
+            color: #e6edf3;
+            padding: 24px;
+            min-height: 100vh;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #58a6ff, #bc8cff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            color: #8b949e;
+            font-size: 14px;
+            margin-bottom: 24px;
+        }
+
+        .test-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .test-card {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .test-card h3 {
+            font-size: 16px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-badge.loading {
+            background: rgba(136, 192, 255, 0.15);
+            color: #58a6ff;
+        }
+
+        .status-badge.success {
+            background: rgba(63, 185, 80, 0.15);
+            color: #3fb950;
+        }
+
+        .status-badge.error {
+            background: rgba(248, 81, 73, 0.15);
+            color: #f85149;
+        }
+
+        .status-badge.warning {
+            background: rgba(210, 153, 34, 0.15);
+            color: #d29922;
+        }
+
+        .spinner {
+            width: 14px;
+            height: 14px;
+            border: 2px solid transparent;
+            border-top: 2px solid currentColor;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            display: inline-block;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .result-box {
+            background: #0d1117;
+            border: 1px solid #21262d;
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 12px;
+            font-family: 'SF Mono', 'Consolas', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 12px;
+            font-size: 13px;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 8px 12px;
+            text-align: left;
+            border-bottom: 1px solid #21262d;
+        }
+
+        .data-table th {
+            color: #8b949e;
+            font-weight: 500;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+
+        .data-table tr:hover {
+            background: rgba(88, 166, 255, 0.05);
+        }
+
+        .highlight-diff {
+            color: #f0883e;
+            font-weight: 600;
+        }
+
+        .highlight-same {
+            color: #8b949e;
+        }
+
+        .highlight-supabase {
+            color: #3fb950;
+            font-weight: 600;
+        }
+
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        .btn {
+            padding: 8px 20px;
+            border: 1px solid #30363d;
+            background: #21262d;
+            color: #e6edf3;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Noto Sans KR', sans-serif;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            background: #30363d;
+            border-color: #58a6ff;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #238636, #2ea043);
+            border-color: #238636;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #2ea043, #3fb950);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 8px;
+            margin-top: 16px;
+        }
+
+        .summary-row {
+            display: flex;
+            gap: 24px;
+            margin-top: 12px;
+        }
+
+        .summary-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .summary-label {
+            font-size: 12px;
+            color: #8b949e;
+        }
+
+        .summary-value {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .summary-value.green {
+            color: #3fb950;
+        }
+
+        .summary-value.red {
+            color: #f85149;
+        }
+
+        .summary-value.yellow {
+            color: #d29922;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🔍 데이터 로딩 진단 테스트</h1>
+    <p class="subtitle">Supabase에서 실제 데이터를 불러오고 있는지 확인합니다.</p>
+
+    <div class="test-grid">
+        <!-- Test 1: Supabase 연결 -->
+        <div class="test-card">
+            <h3>① Supabase 연결 상태</h3>
+            <div id="test1-status">
+                <span class="status-badge loading"><span class="spinner"></span> 테스트 중...</span>
+            </div>
+            <div class="result-box" id="test1-result">연결 확인 중...</div>
+        </div>
+
+        <!-- Test 2: Districts 테이블 -->
+        <div class="test-card">
+            <h3>② Districts 테이블 조회</h3>
+            <div id="test2-status">
+                <span class="status-badge loading"><span class="spinner"></span> 테스트 중...</span>
+            </div>
+            <div class="result-box" id="test2-result">데이터 조회 중...</div>
+        </div>
+
+        <!-- Test 3: Housing Prices 테이블 -->
+        <div class="test-card">
+            <h3>③ Housing Prices 테이블 조회</h3>
+            <div id="test3-status">
+                <span class="status-badge loading"><span class="spinner"></span> 테스트 중...</span>
+            </div>
+            <div class="result-box" id="test3-result">데이터 조회 중...</div>
+        </div>
+
+        <!-- Test 4: Edge Function -->
+        <div class="test-card">
+            <h3>④ Edge Function 상태</h3>
+            <div id="test4-status">
+                <span class="status-badge loading"><span class="spinner"></span> 테스트 중...</span>
+            </div>
+            <div class="result-box" id="test4-result">함수 호출 중...</div>
+        </div>
+
+        <!-- Test 5: 데이터 비교 -->
+        <div class="test-card full-width">
+            <h3>⑤ 하드코딩 데이터 vs Supabase 데이터 비교</h3>
+            <div id="test5-status">
+                <span class="status-badge loading"><span class="spinner"></span> 비교 중...</span>
+            </div>
+            <div id="test5-result"></div>
+        </div>
+
+        <!-- 종합 결과 -->
+        <div class="test-card full-width">
+            <h3>📊 종합 진단 결과</h3>
+            <div id="summary-result">
+                <span class="status-badge loading"><span class="spinner"></span> 전체 테스트 진행 중...</span>
+            </div>
+            <div class="summary-row" id="summary-stats" style="display:none;"></div>
+            <div class="btn-group">
+                <button class="btn btn-primary" onclick="runAllTests()">🔄 전체 재테스트</button>
+                <button class="btn" onclick="testEdgeFunctionSync()">⚡ Edge Function 동기화 시도</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ========================================
+        // Supabase Configuration (same as app.js)
+        // ========================================
+        const SUPABASE_URL = 'https://kspzqwtlpeibbeskfwdc.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_nCC6kt-KDpugNANJo7hU9A_Ak0XCIAz';
+
+        let sb = null;
+
+        // 하드코딩된 데이터 (app.js 기본값과 동일)
+        const HARDCODED_SAMPLE = {
+            gangnam: { weekly: 0.18, monthly: 0.52, yearly: 6.8 },
+            seocho: { weekly: 0.20, monthly: 0.58, yearly: 7.2 },
+            yongsan: { weekly: 0.21, monthly: 0.62, yearly: 7.8 },
+            songpa: { weekly: 0.19, monthly: 0.55, yearly: 6.9 },
+            dobong: { weekly: 0.04, monthly: 0.15, yearly: 1.8 },
+        };
+
+        // ========================================
+        // Helper Functions
+        // ========================================
+        function setStatus(id, type, text) {
+            const icons = { loading: `<span class="spinner"></span>`, success: '✅', error: '❌', warning: '⚠️' };
+            document.getElementById(id).innerHTML =
+                `<span class="status-badge ${type}">${icons[type]} ${text}</span>`;
+        }
+
+        function setResult(id, content) {
+            document.getElementById(id).innerHTML = content;
+        }
+
+        // ========================================
+        // Test 1: Supabase 연결
+        // ========================================
+        async function test1_connection() {
+            try {
+                sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+                // 간단한 쿼리로 연결 테스트
+                const { data, error } = await sb.from('districts').select('id').limit(1);
+
+                if (error) {
+                    setStatus('test1-status', 'error', '연결 실패');
+                    setResult('test1-result',
+                        `❌ Supabase 연결 실패\n\nURL: ${SUPABASE_URL}\nError: ${error.message}\nCode: ${error.code}\nHint: ${error.hint || 'N/A'}`);
+                    return false;
+                }
+
+                setStatus('test1-status', 'success', '연결 성공');
+                setResult('test1-result',
+                    `✅ Supabase 연결 성공!\n\nURL: ${SUPABASE_URL}\n응답 데이터: ${JSON.stringify(data, null, 2)}`);
+                return true;
+
+            } catch (e) {
+                setStatus('test1-status', 'error', '연결 오류');
+                setResult('test1-result', `❌ 예외 발생: ${e.message}`);
+                return false;
+            }
+        }
+
+        // ========================================
+        // Test 2: Districts 테이블
+        // ========================================
+        async function test2_districts() {
+            if (!sb) {
+                setStatus('test2-status', 'error', 'Supabase 미연결');
+                setResult('test2-result', '❌ Supabase 연결이 필요합니다.');
+                return null;
+            }
+
+            try {
+                const { data, error } = await sb.from('districts').select('*');
+
+                if (error) {
+                    setStatus('test2-status', 'error', '조회 실패');
+                    setResult('test2-result', `❌ Error: ${error.message}`);
+                    return null;
+                }
+
+                if (!data || data.length === 0) {
+                    setStatus('test2-status', 'warning', '데이터 없음');
+                    setResult('test2-result', '⚠️ districts 테이블이 비어있습니다.\n→ seed-data.sql을 실행해야 합니다.');
+                    return null;
+                }
+
+                setStatus('test2-status', 'success', `${data.length}개 구 확인`);
+
+                let table = '<table class="data-table"><thead><tr><th>ID</th><th>이름</th><th>코드</th></tr></thead><tbody>';
+                data.forEach(d => {
+                    table += `<tr><td>${d.id}</td><td>${d.name}</td><td>${d.code}</td></tr>`;
+                });
+                table += '</tbody></table>';
+
+                setResult('test2-result', table);
+                return data;
+
+            } catch (e) {
+                setStatus('test2-status', 'error', '오류');
+                setResult('test2-result', `❌ 예외: ${e.message}`);
+                return null;
+            }
+        }
+
+        // ========================================
+        // Test 3: Housing Prices 테이블
+        // ========================================
+        async function test3_prices() {
+            if (!sb) {
+                setStatus('test3-status', 'error', 'Supabase 미연결');
+                setResult('test3-result', '❌ Supabase 연결이 필요합니다.');
+                return null;
+            }
+
+            try {
+                const { data, error, count } = await sb
+                    .from('housing_prices')
+                    .select('*', { count: 'exact' })
+                    .order('period_value', { ascending: false })
+                    .limit(20);
+
+                if (error) {
+                    setStatus('test3-status', 'error', '조회 실패');
+                    setResult('test3-result', `❌ Error: ${error.message}`);
+                    return null;
+                }
+
+                if (!data || data.length === 0) {
+                    setStatus('test3-status', 'warning', '데이터 없음');
+                    setResult('test3-result', '⚠️ housing_prices 테이블이 비어있습니다.\n→ seed-data.sql을 실행해야 합니다.');
+                    return null;
+                }
+
+                // 기간별 통계
+                const stats = { weekly: 0, monthly: 0, yearly: 0 };
+                const { data: allData } = await sb.from('housing_prices').select('period_type');
+                if (allData) {
+                    allData.forEach(d => stats[d.period_type]++);
+                }
+
+                setStatus('test3-status', 'success', `총 ${allData ? allData.length : data.length}건`);
+
+                let content = `<div style="margin-bottom:12px;">
+                    📈 주간(weekly): <strong>${stats.weekly}</strong>건 |
+                    📅 월간(monthly): <strong>${stats.monthly}</strong>건 |
+                    📊 연간(yearly): <strong>${stats.yearly}</strong>건
+                </div>`;
+                content += '<table class="data-table"><thead><tr><th>구</th><th>기간</th><th>기간값</th><th>상승률</th></tr></thead><tbody>';
+                data.slice(0, 15).forEach(d => {
+                    content += `<tr>
+                        <td>${d.district_id}</td>
+                        <td>${d.period_type}</td>
+                        <td>${d.period_value}</td>
+                        <td>${d.rate >= 0 ? '+' : ''}${d.rate}%</td>
+                    </tr>`;
+                });
+                content += '</tbody></table>';
+                if (data.length > 15) content += `<div style="color:#8b949e;margin-top:8px;">... 그 외 ${(allData ? allData.length : data.length) - 15}건</div>`;
+
+                setResult('test3-result', content);
+                return data;
+
+            } catch (e) {
+                setStatus('test3-status', 'error', '오류');
+                setResult('test3-result', `❌ 예외: ${e.message}`);
+                return null;
+            }
+        }
+
+        // ========================================
+        // Test 4: Edge Function
+        // ========================================
+        async function test4_edgeFunction() {
+            try {
+                const response = await fetch(
+                    `${SUPABASE_URL}/functions/v1/fetch-housing-data?action=sync-data`,
+                    {
+                        method: 'GET',
+                        headers: {
+                            'apikey': SUPABASE_ANON_KEY,
+                            'Content-Type': 'application/json'
+                        }
+                    }
+                );
+
+                const status = response.status;
+                let body;
+                try {
+                    body = await response.json();
+                } catch {
+                    body = await response.text();
+                }
+
+                if (response.ok) {
+                    setStatus('test4-status', 'success', `HTTP ${status}`);
+                    setResult('test4-result',
+                        `✅ Edge Function 응답 성공\n\nHTTP Status: ${status}\n응답:\n${JSON.stringify(body, null, 2)}`);
+                    return true;
+                } else {
+                    setStatus('test4-status', 'error', `HTTP ${status}`);
+                    setResult('test4-result',
+                        `❌ Edge Function 오류\n\nHTTP Status: ${status}\n응답:\n${JSON.stringify(body, null, 2)}`);
+                    return false;
+                }
+
+            } catch (e) {
+                setStatus('test4-status', 'warning', '호출 실패');
+                setResult('test4-result',
+                    `⚠️ Edge Function 호출 실패\n\n오류: ${e.message}\n\n→ Edge Function이 아직 배포되지 않았을 수 있습니다.\n→ 이 경우 Supabase의 seed 데이터만 사용됩니다.`);
+                return false;
+            }
+        }
+
+        // ========================================
+        // Test 5: 데이터 비교
+        // ========================================
+        async function test5_compare() {
+            if (!sb) {
+                setStatus('test5-status', 'error', 'Supabase 미연결');
+                setResult('test5-result', '<div class="result-box">❌ Supabase 연결이 필요합니다.</div>');
+                return;
+            }
+
+            try {
+                // Supabase에서 최신 주간 데이터 가져오기
+                const { data: prices } = await sb
+                    .from('housing_prices')
+                    .select('district_id, period_type, rate, period_value')
+                    .in('district_id', Object.keys(HARDCODED_SAMPLE))
+                    .order('period_value', { ascending: false });
+
+                if (!prices || prices.length === 0) {
+                    setStatus('test5-status', 'warning', '비교 불가');
+                    setResult('test5-result', '<div class="result-box">⚠️ Supabase에 비교할 데이터가 없습니다.</div>');
+                    return;
+                }
+
+                // 구별로 최신값 추출
+                const supabaseData = {};
+                prices.forEach(p => {
+                    if (!supabaseData[p.district_id]) supabaseData[p.district_id] = {};
+                    if (!supabaseData[p.district_id][p.period_type]) {
+                        supabaseData[p.district_id][p.period_type] = parseFloat(p.rate);
+                    }
+                });
+
+                let identical = 0;
+                let different = 0;
+                let table = `<table class="data-table">
+                    <thead><tr>
+                        <th>구</th><th>기간</th>
+                        <th>하드코딩 값</th><th>Supabase 값</th><th>결과</th>
+                    </tr></thead><tbody>`;
+
+                const districtNames = {
+                    gangnam: '강남구', seocho: '서초구', yongsan: '용산구',
+                    songpa: '송파구', dobong: '도봉구'
+                };
+
+                Object.entries(HARDCODED_SAMPLE).forEach(([id, hardcoded]) => {
+                    ['weekly', 'monthly', 'yearly'].forEach(period => {
+                        const hcVal = hardcoded[period];
+                        const sbVal = supabaseData[id]?.[period];
+                        const isSame = sbVal !== undefined && Math.abs(hcVal - sbVal) < 0.001;
+
+                        if (isSame) identical++; else different++;
+
+                        table += `<tr>
+                            <td>${districtNames[id]}</td>
+                            <td>${period}</td>
+                            <td>${hcVal.toFixed(2)}%</td>
+                            <td>${sbVal !== undefined ? sbVal.toFixed(2) + '%' : '<span style="color:#f85149">없음</span>'}</td>
+                            <td>${isSame
+                                ? '<span class="highlight-same">동일 ✓</span>'
+                                : sbVal !== undefined
+                                    ? '<span class="highlight-diff">⚡ 다름 (Supabase 데이터 사용 중)</span>'
+                                    : '<span style="color:#f85149">❌ 미존재</span>'
+                            }</td>
+                        </tr>`;
+                    });
+                });
+
+                table += '</tbody></table>';
+
+                if (different > 0 && Object.values(supabaseData).some(d => Object.keys(d).length > 0)) {
+                    setStatus('test5-status', 'success', `Supabase 데이터 감지`);
+                } else if (identical > 0 && different === 0) {
+                    setStatus('test5-status', 'warning', `하드코딩 값과 동일`);
+                } else {
+                    setStatus('test5-status', 'warning', '비교 완료');
+                }
+
+                setResult('test5-result', `
+                    <div style="margin-bottom:12px;">
+                        동일: <strong>${identical}</strong>건 |
+                        차이: <strong class="highlight-diff">${different}</strong>건
+                    </div>
+                    ${table}
+                    <div style="margin-top:12px;color:#8b949e;font-size:12px;">
+                        💡 값이 "다름"이면 Supabase의 실데이터가 사용 중입니다.<br>
+                        💡 값이 "동일"이면 하드코딩 데이터와 Supabase 시드 데이터가 같습니다. (seed-data.sql의 값이 하드코딩과 동일하게 설정됨)
+                    </div>
+                `);
+
+            } catch (e) {
+                setStatus('test5-status', 'error', '비교 실패');
+                setResult('test5-result', `<div class="result-box">❌ 예외: ${e.message}</div>`);
+            }
+        }
+
+        // ========================================
+        // 종합 결과
+        // ========================================
+        function showSummary(results) {
+            const el = document.getElementById('summary-result');
+            const statsEl = document.getElementById('summary-stats');
+
+            const passCount = Object.values(results).filter(v => v === true).length;
+            const failCount = Object.values(results).filter(v => v === false).length;
+            const warnCount = Object.values(results).filter(v => v === null).length;
+
+            let statusType, statusText;
+            if (failCount === 0 && warnCount === 0) {
+                statusType = 'success';
+                statusText = '모든 테스트 통과! ✅ 실제 데이터가 정상적으로 로드되고 있습니다.';
+            } else if (failCount === 0) {
+                statusType = 'warning';
+                statusText = '부분 성공 — 일부 항목 확인 필요';
+            } else {
+                statusType = 'error';
+                statusText = '일부 테스트 실패 — 아래 결과를 확인하세요';
+            }
+
+            el.innerHTML = `<span class="status-badge ${statusType}">${statusText}</span>`;
+
+            statsEl.style.display = 'flex';
+            statsEl.innerHTML = `
+                <div class="summary-item">
+                    <span class="summary-label">통과</span>
+                    <span class="summary-value green">${passCount}</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">실패</span>
+                    <span class="summary-value red">${failCount}</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">경고</span>
+                    <span class="summary-value yellow">${warnCount}</span>
+                </div>
+            `;
+        }
+
+        // ========================================
+        // Edge Function 동기화 시도
+        // ========================================
+        async function testEdgeFunctionSync() {
+            setStatus('test4-status', 'loading', '동기화 시도 중...');
+            const result = await test4_edgeFunction();
+
+            if (result) {
+                // 동기화 성공 → 데이터 다시 확인
+                await test3_prices();
+                await test5_compare();
+            }
+        }
+
+        // ========================================
+        // 전체 테스트 실행
+        // ========================================
+        async function runAllTests() {
+            // Reset all
+            ['test1', 'test2', 'test3', 'test4', 'test5'].forEach(id => {
+                setStatus(id + '-status', 'loading', '테스트 중...');
+            });
+            document.getElementById('summary-result').innerHTML =
+                '<span class="status-badge loading"><span class="spinner"></span> 전체 테스트 진행 중...</span>';
+            document.getElementById('summary-stats').style.display = 'none';
+
+            const results = {};
+
+            // Test 1: 연결
+            results.connection = await test1_connection();
+
+            // Test 2: Districts
+            const districts = await test2_districts();
+            results.districts = districts !== null;
+
+            // Test 3: Prices
+            const prices = await test3_prices();
+            results.prices = prices !== null;
+
+            // Test 4: Edge Function
+            results.edgeFunction = await test4_edgeFunction();
+
+            // Test 5: 비교
+            await test5_compare();
+
+            // 종합
+            showSummary(results);
+        }
+
+        // 페이지 로드 시 자동 실행
+        document.addEventListener('DOMContentLoaded', runAllTests);
+    </script>
+</body>
+
+</html>

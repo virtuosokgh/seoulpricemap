@@ -195,6 +195,9 @@ const seoulDistrictData = {
 // ========================================
 // 서울 지도 SVG 데이터
 // ========================================
+// ========================================
+// 서울 지도 SVG 데이터 (라벨 구조 개선)
+// ========================================
 const seoulMapSVG = `
 <svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
     <defs>
@@ -207,108 +210,60 @@ const seoulMapSVG = `
         </filter>
     </defs>
     
-    <!-- 도봉구 -->
+    <!-- 각 구역 패스 (변동없음) -->
     <path id="dobong" class="district" d="M380 30 L420 25 L450 40 L460 80 L440 110 L400 115 L370 90 L365 55 Z"/>
-    
-    <!-- 강북구 -->
     <path id="gangbuk" class="district" d="M310 50 L365 55 L370 90 L400 115 L390 145 L340 150 L300 130 L290 90 Z"/>
-    
-    <!-- 노원구 -->
     <path id="nowon" class="district" d="M450 40 L510 35 L540 60 L545 110 L520 150 L460 155 L440 110 L460 80 Z"/>
-    
-    <!-- 은평구 -->
     <path id="eunpyeong" class="district" d="M180 110 L240 100 L290 90 L300 130 L280 175 L220 190 L170 170 L160 130 Z"/>
-    
-    <!-- 성북구 -->
     <path id="seongbuk" class="district" d="M300 130 L340 150 L390 145 L410 180 L380 220 L320 225 L280 200 L280 175 Z"/>
-    
-    <!-- 종로구 -->
     <path id="jongno" class="district" d="M220 190 L280 175 L280 200 L320 225 L310 270 L250 280 L210 250 L200 210 Z"/>
-    
-    <!-- 중랑구 -->
     <path id="jungnang" class="district" d="M460 155 L520 150 L550 190 L540 240 L490 260 L440 240 L430 200 L440 165 Z"/>
-    
-    <!-- 동대문구 -->
     <path id="dongdaemun" class="district" d="M380 220 L410 180 L440 165 L430 200 L440 240 L410 275 L360 270 L350 240 Z"/>
-    
-    <!-- 서대문구 -->
     <path id="seodaemun" class="district" d="M170 170 L220 190 L200 210 L210 250 L180 290 L130 280 L110 230 L130 190 Z"/>
-    
-    <!-- 중구 -->
     <path id="jung" class="district" d="M250 280 L310 270 L320 310 L290 350 L240 345 L220 310 Z"/>
-    
-    <!-- 마포구 -->
     <path id="mapo" class="district" d="M110 230 L130 280 L180 290 L170 340 L120 370 L70 350 L60 290 L80 250 Z"/>
-    
-    <!-- 광진구 -->
     <path id="gwangjin" class="district" d="M440 240 L490 260 L520 300 L500 350 L450 360 L410 330 L400 290 L410 275 Z"/>
-    
-    <!-- 성동구 -->
     <path id="seongdong" class="district" d="M360 270 L410 275 L400 290 L410 330 L380 370 L330 365 L310 330 L320 310 L350 285 Z"/>
-    
-    <!-- 용산구 -->
     <path id="yongsan" class="district" d="M210 250 L250 280 L220 310 L240 345 L200 390 L150 380 L120 340 L120 370 L170 340 L180 290 Z"/>
-    
-    <!-- 강서구 -->
     <path id="gangseo" class="district" d="M30 320 L70 350 L120 370 L110 420 L80 470 L30 480 L10 430 L10 360 Z"/>
-    
-    <!-- 양천구 -->
     <path id="yangcheon" class="district" d="M80 470 L110 420 L160 430 L180 480 L150 520 L100 530 L70 500 Z"/>
-    
-    <!-- 영등포구 -->
     <path id="yeongdeungpo" class="district" d="M120 370 L150 380 L200 390 L210 440 L180 480 L160 430 L110 420 Z"/>
-    
-    <!-- 동작구 -->
     <path id="dongjak" class="district" d="M200 390 L240 345 L290 350 L300 400 L270 450 L220 460 L210 440 Z"/>
-    
-    <!-- 구로구 -->
     <path id="guro" class="district" d="M70 500 L100 530 L150 520 L180 560 L140 600 L80 590 L40 550 L50 510 Z"/>
-    
-    <!-- 금천구 -->
     <path id="geumcheon" class="district" d="M150 520 L180 480 L220 510 L240 560 L200 590 L180 560 Z"/>
-    
-    <!-- 관악구 -->
     <path id="gwanak" class="district" d="M220 460 L270 450 L310 480 L320 530 L280 570 L240 560 L220 510 L210 480 Z"/>
-    
-    <!-- 서초구 -->
     <path id="seocho" class="district" d="M300 400 L340 410 L400 420 L420 480 L380 540 L320 530 L310 480 L270 450 Z"/>
-    
-    <!-- 강남구 -->
     <path id="gangnam" class="district" d="M380 370 L410 330 L450 360 L500 380 L520 440 L490 500 L420 480 L400 420 L340 410 L330 365 Z"/>
-    
-    <!-- 송파구 -->
     <path id="songpa" class="district" d="M500 350 L560 340 L610 380 L620 440 L580 490 L520 500 L490 500 L520 440 L500 380 Z"/>
-    
-    <!-- 강동구 -->
     <path id="gangdong" class="district" d="M520 300 L580 280 L640 310 L660 370 L610 380 L560 340 L500 350 Z"/>
     
-    <!-- 구 이름 라벨 -->
-    <g class="district-labels" font-size="11" font-weight="500" fill="#ffffff" text-anchor="middle" pointer-events="none">
-        <text x="410" y="60">도봉구</text>
-        <text x="335" y="105">강북구</text>
-        <text x="490" y="100">노원구</text>
-        <text x="225" y="145">은평구</text>
-        <text x="345" y="185">성북구</text>
-        <text x="255" y="240">종로구</text>
-        <text x="490" y="205">중랑구</text>
-        <text x="400" y="225">동대문</text>
-        <text x="165" y="240">서대문</text>
-        <text x="275" y="315">중구</text>
-        <text x="120" y="310">마포구</text>
-        <text x="465" y="305">광진구</text>
-        <text x="360" y="325">성동구</text>
-        <text x="185" y="350">용산구</text>
-        <text x="60" y="405">강서구</text>
-        <text x="130" y="475">양천구</text>
-        <text x="165" y="415">영등포</text>
-        <text x="250" y="415">동작구</text>
-        <text x="110" y="555">구로구</text>
-        <text x="200" y="545">금천구</text>
-        <text x="275" y="510">관악구</text>
-        <text x="360" y="475">서초구</text>
-        <text x="450" y="435">강남구</text>
-        <text x="560" y="420">송파구</text>
-        <text x="590" y="335">강동구</text>
+    <!-- 구 이름 및 상승률 라벨 -->
+    <g class="district-labels" font-family="Noto Sans KR" text-anchor="middle" pointer-events="none">
+        <text x="410" y="55" id="label-dobong">도봉구<tspan x="410" dy="12" class="district-rate">0.00%</tspan></text>
+        <text x="335" y="100" id="label-gangbuk">강북구<tspan x="335" dy="12" class="district-rate">0.00%</tspan></text>
+        <text x="495" y="95" id="label-nowon">노원구<tspan x="495" dy="12" class="district-rate">0.00%</tspan></text>
+        <text x="225" y="145" id="label-eunpyeong">은평구<tspan x="225" dy="12" class="district-rate">0.00%</tspan></text>
+        <text x="345" y="185" id="label-seongbuk">성북구<tspan x="345" dy="12" class="district-rate">0.00%</tspan></text>
+        <text x="255" y="240" id="label-jongno">종로구<tspan x="255" dy="12" class="district-rate">0.00%</tspan></text>
+        <text x="495" y="205" id="label-jungnang">중랑구<tspan x="495" dy="12" class="district-rate">0.00%</tspan></text>
+        <text x="400" y="225" id="label-dongdaemun">동대문<tspan x="400" dy="12" class="district-rate">0.00%</tspan></text>
+        <text x="165" y="240" id="label-seodaemun">서대문<tspan x="165" dy="12" class="district-rate">0.00%</tspan></text>
+        <text x="275" y="315" id="label-jung">중구<tspan x="275" dy="12" class="district-rate">0.00%</tspan></text>
+        <text x="120" y="310" id="label-mapo">마포구<tspan x="120" dy="12" class="district-rate">0.00%</tspan></text>
+        <text x="465" y="310" id="label-gwangjin">광진구<tspan x="465" dy="12" class="district-rate">0.00%</tspan></text>
+        <text x="360" y="325" id="label-seongdong">성동구<tspan x="360" dy="12" class="district-rate">0.00%</tspan></text>
+        <text x="185" y="355" id="label-yongsan">용산구<tspan x="185" dy="12" class="district-rate">0.00%</tspan></text>
+        <text x="60" y="405" id="label-gangseo">강서구<tspan x="60" dy="12" class="district-rate">0.00%</tspan></text>
+        <text x="130" y="475" id="label-yangcheon">양천구<tspan x="130" dy="12" class="district-rate">0.00%</tspan></text>
+        <text x="165" y="415" id="label-yeongdeungpo">영등포<tspan x="165" dy="12" class="district-rate">0.00%</tspan></text>
+        <text x="250" y="415" id="label-dongjak">동작구<tspan x="250" dy="12" class="district-rate">0.00%</tspan></text>
+        <text x="110" y="555" id="label-guro">구로구<tspan x="110" dy="12" class="district-rate">0.00%</tspan></text>
+        <text x="200" y="545" id="label-geumcheon">금천구<tspan x="200" dy="12" class="district-rate">0.00%</tspan></text>
+        <text x="275" y="510" id="label-gwanak">관악구<tspan x="275" dy="12" class="district-rate">0.00%</tspan></text>
+        <text x="360" y="475" id="label-seocho">서초구<tspan x="360" dy="12" class="district-rate">0.00%</tspan></text>
+        <text x="450" y="435" id="label-gangnam">강남구<tspan x="450" dy="12" class="district-rate">0.00%</tspan></text>
+        <text x="560" y="420" id="label-songpa">송파구<tspan x="560" dy="12" class="district-rate">0.00%</tspan></text>
+        <text x="590" y="335" id="label-gangdong">강동구<tspan x="590" dy="12" class="district-rate">0.00%</tspan></text>
     </g>
 </svg>
 `;
@@ -374,7 +329,7 @@ function initializeMap() {
 }
 
 // ========================================
-// 지도 색상 적용
+// 지도 색상 및 라벨 적용
 // ========================================
 function colorizeMap() {
     const districts = document.querySelectorAll('.district');
@@ -387,6 +342,16 @@ function colorizeMap() {
             const rate = data[currentPeriod].current;
             const color = getColorForRate(rate, currentPeriod);
             district.style.fill = color;
+
+            // 라벨 업데이트 (상승률 표시)
+            const label = document.getElementById(`label-${districtId}`);
+            if (label) {
+                const rateSpan = label.querySelector('.district-rate');
+                if (rateSpan) {
+                    rateSpan.textContent = `${rate >= 0 ? '+' : ''}${rate.toFixed(2)}%`;
+                    // 가독성을 위해 상승률에 따른 색상 살짝 적용 가능 (현재는 흰색 유지)
+                }
+            }
         }
     });
 }
@@ -477,7 +442,9 @@ function updateStats() {
 
     // 평균 계산
     const average = sortedData.reduce((sum, d) => sum + d.rate, 0) / sortedData.length;
-    document.getElementById('average-value').textContent = `+${average.toFixed(2)}%`;
+    const avgEl = document.getElementById('average-value');
+    avgEl.textContent = `${average >= 0 ? '+' : ''}${average.toFixed(2)}%`;
+    avgEl.className = `average-value ${average >= 0 ? 'positive' : 'negative'}`;
 }
 
 // ========================================
