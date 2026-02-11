@@ -623,13 +623,15 @@ function getChartLabels() {
 
     if (currentPeriod === 'weekly') {
         for (let i = 5; i >= 0; i--) {
-            const weekNum = getWeekNumber(new Date(now - i * 7 * 24 * 60 * 60 * 1000));
-            labels.push(`${weekNum}주차`);
+            const date = new Date(now - i * 7 * 24 * 60 * 60 * 1000);
+            const month = date.getMonth() + 1;
+            const weekNum = getWeekNumber(date);
+            labels.push(`${month}월 ${weekNum}주차`);
         }
     } else if (currentPeriod === 'monthly') {
         for (let i = 5; i >= 0; i--) {
-            const month = new Date(now.getFullYear(), now.getMonth() - i, 1);
-            labels.push(`${month.getMonth() + 1}월`);
+            const monthDate = new Date(now.getFullYear(), now.getMonth() - i, 1);
+            labels.push(`${monthDate.getFullYear()}년 ${monthDate.getMonth() + 1}월`);
         }
     } else {
         for (let i = 5; i >= 0; i--) {
