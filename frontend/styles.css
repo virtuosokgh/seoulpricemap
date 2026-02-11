@@ -214,7 +214,28 @@ body {
     stroke-width: 2.5;
 }
 
-/* Labels removed */
+/* Labels style restored */
+.district-labels text {
+    fill: var(--toss-gray-900);
+    font-weight: 700;
+    font-size: 11px;
+    paint-order: stroke;
+    stroke: rgba(255, 255, 255, 0.8);
+    stroke-width: 3px;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    pointer-events: none;
+}
+
+.district-rate {
+    font-weight: 600;
+    font-size: 10px;
+}
+
+/* Hide tooltip to address corner info request */
+.map-tooltip {
+    display: none !important;
+}
 
 /* Legend */
 .legend {
