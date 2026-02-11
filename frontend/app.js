@@ -291,7 +291,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     initializeMap();
     initializeTabs();
-    initializeModal();
+    initializeDetailView();
     updateDisplay();
 });
 
@@ -307,7 +307,7 @@ function initializeMap() {
     districts.forEach(district => {
         // 클릭 이벤트
         district.addEventListener('click', () => {
-            openDistrictModal(district.id);
+            showDistrictDetail(district.id);
         });
 
         // 호버 이벤트
@@ -349,7 +349,6 @@ function colorizeMap() {
                 const rateSpan = label.querySelector('.district-rate');
                 if (rateSpan) {
                     rateSpan.textContent = `${rate >= 0 ? '+' : ''}${rate.toFixed(2)}%`;
-                    // 가독성을 위해 상승률에 따른 색상 살짝 적용 가능 (현재는 흰색 유지)
                 }
             }
         }
@@ -360,22 +359,20 @@ function colorizeMap() {
 // 상승률에 따른 색상 반환 (Toss Style)
 // ========================================
 function getColorForRate(rate, period) {
-    // 기간별 스케일 조정 (변동률 직관성 확보)
     let scale = 1;
     if (period === 'monthly') scale = 0.2;
     if (period === 'yearly') scale = 0.05;
 
     const normalizedRate = rate * scale;
 
-    // Toss Style Heatmap Colors (Light Mode Optimized)
-    if (normalizedRate <= -0.15) return '#dae9ff';    // 진한 파랑 배경
-    if (normalizedRate <= -0.05) return '#ebf4ff';    // 파랑 배경
-    if (normalizedRate <= -0.01) return '#f2f8ff';    // 연한 파랑 배경
-    if (normalizedRate <= 0.01) return '#f9fafb';     // Neutral (Toss Gray 50)
-    if (normalizedRate <= 0.05) return '#fff5f5';     // 연한 빨강 배경
-    if (normalizedRate <= 0.10) return '#ffe3e3';     // 빨강 배경
-    if (normalizedRate <= 0.15) return '#ffc9c9';     // 진한 빨강 배경
-    return '#ffb3b3';                                  // 아주 진한 빨강 배경
+    if (normalizedRate <= -0.15) return '#dae9ff';
+    if (normalizedRate <= -0.05) return '#ebf4ff';
+    if (normalizedRate <= -0.01) return '#f2f8ff';
+    if (normalizedRate <= 0.01) return '#f9fafb';
+    if (normalizedRate <= 0.05) return '#fff5f5';
+    if (normalizedRate <= 0.10) return '#ffe3e3';
+    if (normalizedRate <= 0.15) return '#ffc9c9';
+    return '#ffb3b3';
 }
 
 // ========================================
@@ -386,14 +383,9 @@ function initializeTabs() {
 
     tabs.forEach(tab => {
         tab.addEventListener('click', () => {
-            // 활성 탭 변경
             tabs.forEach(t => t.classList.remove('active'));
             tab.classList.add('active');
-
-            // 기간 변경
             currentPeriod = tab.dataset.period;
-
-            // 화면 업데이트
             updateDisplay();
         });
     });
@@ -412,7 +404,6 @@ function updateDisplay() {
 // 통계 업데이트
 // ========================================
 function updateStats() {
-    // 데이터 정렬
     const sortedData = Object.entries(seoulDistrictData)
         .map(([id, data]) => ({
             id,
@@ -421,10 +412,6 @@ function updateStats() {
         }))
         .sort((a, b) => b.rate - a.rate);
 
-    // 구별 상세 내역 (전체 리스트 - 제거됨)
-    // const statsList = document.getElementById('stats-list');
-
-    // 상승률 TOP 5
     const topIncreaseList = document.getElementById('top-increase-list');
     if (topIncreaseList) {
         topIncreaseList.innerHTML = sortedData.slice(0, 5)
@@ -436,7 +423,6 @@ function updateStats() {
             `).join('');
     }
 
-    // 하락률 TOP 5 (가장 낮은 상승률)
     const topDecreaseList = document.getElementById('top-decrease-list');
     if (topDecreaseList) {
         topDecreaseList.innerHTML = sortedData.slice(-5).reverse()
@@ -448,7 +434,6 @@ function updateStats() {
             `).join('');
     }
 
-    // 평균 계산
     const average = sortedData.reduce((sum, d) => sum + d.rate, 0) / sortedData.length;
     const avgEl = document.getElementById('average-value');
     if (avgEl) {
@@ -509,32 +494,26 @@ function hideTooltip() {
 }
 
 // ========================================
-// 모달
+// 상세 정보 표시 (In-place)
 // ========================================
-function initializeModal() {
-    const overlay = document.getElementById('modal-overlay');
-    const closeBtn = document.getElementById('modal-close');
-
-    closeBtn.addEventListener('click', closeModal);
-    overlay.addEventListener('click', (e) => {
-        if (e.target === overlay) closeModal();
-    });
-
-    // ESC 키로 닫기
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') closeModal();
-    });
+function initializeDetailView() {
+    const closeBtn = document.getElementById('detail-close');
+    if (closeBtn) closeBtn.addEventListener('click', hideDetail);
 }
 
-function openDistrictModal(districtId) {
-    const overlay = document.getElementById('modal-overlay');
+function handleDistrictClick(districtId) {
+    showDistrictDetail(districtId);
+}
+
+function showDistrictDetail(districtId) {
+    const detailCard = document.getElementById('detail-trend-card');
     const data = seoulDistrictData[districtId];
 
-    if (!data) return;
+    if (!data || !detailCard) return;
 
     // 타이틀 설정
     const periodLabels = { weekly: '주간', monthly: '월간', yearly: '연간' };
-    document.getElementById('modal-title').textContent =
+    document.getElementById('detail-title').textContent =
         `${data.name} ${periodLabels[currentPeriod]} 상승률 추이`;
 
     // 통계 설정
@@ -543,22 +522,23 @@ function openDistrictModal(districtId) {
 
     const formatRate = (val) => `${val >= 0 ? '+' : ''}${val.toFixed(2)}%`;
 
-    document.getElementById('modal-current').textContent = formatRate(periodData.current);
-    document.getElementById('modal-avg').textContent =
-        formatRate(allValues.reduce((a, b) => a + b, 0) / allValues.length);
-    document.getElementById('modal-max').textContent = formatRate(Math.max(...allValues));
-    document.getElementById('modal-min').textContent = formatRate(Math.min(...allValues));
+    document.getElementById('detail-current').textContent = formatRate(periodData.current);
+    document.getElementById('detail-avg').textContent =
+        formatRate(allValues.reduce((sum, val) => sum + val, 0) / allValues.length);
+    document.getElementById('detail-max').textContent = formatRate(Math.max(...allValues));
+    document.getElementById('detail-min').textContent = formatRate(Math.min(...allValues));
 
-    // 차트 그리기
+    // 차트 표시
     drawTrendChart(data.name, periodData);
 
-    // 모달 표시
-    overlay.classList.add('visible');
+    // 카드 보이기 및 스크롤
+    detailCard.style.display = 'block';
+    detailCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
-function closeModal() {
-    const overlay = document.getElementById('modal-overlay');
-    overlay.classList.remove('visible');
+function hideDetail() {
+    const detailCard = document.getElementById('detail-trend-card');
+    if (detailCard) detailCard.style.display = 'none';
 
     if (trendChart) {
         trendChart.destroy();
@@ -667,38 +647,25 @@ function getWeekNumber(date) {
 // Supabase 연동 - 실데이터 로드
 // ========================================
 async function loadDataFromSupabase() {
-    if (!supabaseClient) {
-        console.log('Supabase client not available, using fallback data');
-        return;
-    }
+    if (!supabaseClient) return;
 
     try {
-        // 구 정보 가져오기
         const { data: districts, error: districtError } = await supabaseClient
             .from('districts')
             .select('*');
 
-        if (districtError) {
-            console.error('Error fetching districts:', districtError);
-            return;
-        }
+        if (districtError) return;
 
-        // 가격 데이터 가져오기
         const { data: prices, error: priceError } = await supabaseClient
             .from('housing_prices')
             .select('*')
             .order('period_value', { ascending: false });
 
-        if (priceError) {
-            console.error('Error fetching prices:', priceError);
-            return;
-        }
+        if (priceError) return;
 
         if (districts && districts.length > 0 && prices && prices.length > 0) {
-            // 데이터를 seoulDistrictData 형식으로 변환
             updateDistrictData(districts, prices);
             isDataLoaded = true;
-            console.log('✅ Supabase에서 실데이터 로드 완료!');
         }
     } catch (error) {
         console.error('Error loading data from Supabase:', error);
@@ -706,24 +673,17 @@ async function loadDataFromSupabase() {
 }
 
 function updateDistrictData(districts, prices) {
-    // 구별로 데이터 그룹화
     const pricesByDistrict = {};
 
     prices.forEach(price => {
         if (!pricesByDistrict[price.district_id]) {
-            pricesByDistrict[price.district_id] = {
-                weekly: [],
-                monthly: [],
-                yearly: []
-            };
+            pricesByDistrict[price.district_id] = { weekly: [], monthly: [], yearly: [] };
         }
         pricesByDistrict[price.district_id][price.period_type].push(parseFloat(price.rate));
     });
 
-    // seoulDistrictData 업데이트
     districts.forEach(district => {
         const districtPrices = pricesByDistrict[district.id];
-
         if (districtPrices && seoulDistrictData[district.id]) {
             ['weekly', 'monthly', 'yearly'].forEach(period => {
                 if (districtPrices[period] && districtPrices[period].length > 0) {
@@ -740,42 +700,24 @@ function updateDistrictData(districts, prices) {
 // 외부 API 동기화 함수
 // ========================================
 async function syncFromExternalAPI() {
-    if (!supabaseClient) {
-        console.error('Supabase client not available');
-        return { success: false, error: 'Supabase client not available' };
-    }
+    if (!supabaseClient) return { success: false, error: 'Supabase client not available' };
 
     try {
-        console.log('🔄 외부 API에서 데이터 동기화 중...');
-
-        const response = await fetch(
-            `${SUPABASE_URL}/functions/v1/fetch-housing-data?action=sync-data`,
-            {
-                method: 'GET',
-                headers: {
-                    'apikey': SUPABASE_ANON_KEY,
-                    'Content-Type': 'application/json'
-                }
-            }
-        );
+        const response = await fetch(`${SUPABASE_URL}/functions/v1/fetch-housing-data?action=sync-data`, {
+            method: 'GET',
+            headers: { 'apikey': SUPABASE_ANON_KEY, 'Content-Type': 'application/json' }
+        });
 
         const result = await response.json();
-
         if (result.success) {
-            console.log('✅ 외부 API 동기화 완료:', result.message);
-            // 데이터 다시 로드
             await loadDataFromSupabase();
             updateDisplay();
             return result;
-        } else {
-            console.error('❌ 동기화 실패:', result.error);
-            return result;
         }
+        return result;
     } catch (error) {
-        console.error('❌ 동기화 에러:', error);
         return { success: false, error: error.message };
     }
 }
 
-// 전역으로 노출 (콘솔에서 호출 가능)
 window.syncFromExternalAPI = syncFromExternalAPI;
