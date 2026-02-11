@@ -421,31 +421,50 @@ function updateStats() {
         }))
         .sort((a, b) => b.rate - a.rate);
 
+    // 구별 상세 내역 (전체 리스트 - Seamless)
+    const statsList = document.getElementById('stats-list');
+    if (statsList) {
+        statsList.innerHTML = sortedData
+            .map(d => `
+                <li onclick="handleDistrictClick('${d.id}')">
+                    <span class="district-name">${d.name}</span>
+                    <span class="rate ${d.rate >= 0 ? 'positive' : 'negative'}">${d.rate >= 0 ? '+' : ''}${d.rate.toFixed(2)}%</span>
+                </li>
+            `).join('');
+    }
+
     // 상승률 TOP 5
     const topIncreaseList = document.getElementById('top-increase-list');
-    topIncreaseList.innerHTML = sortedData.slice(0, 5)
-        .map(d => `
-            <li>
-                <span class="district-name">${d.name}</span>
-                <span class="rate positive">+${d.rate.toFixed(2)}%</span>
-            </li>
-        `).join('');
+    if (topIncreaseList) {
+        topIncreaseList.innerHTML = sortedData.slice(0, 5)
+            .map(d => `
+                <li onclick="handleDistrictClick('${d.id}')">
+                    <span class="district-name">${d.name}</span>
+                    <span class="rate positive">+${d.rate.toFixed(2)}%</span>
+                </li>
+            `).join('');
+    }
 
     // 하락률 TOP 5 (가장 낮은 상승률)
     const topDecreaseList = document.getElementById('top-decrease-list');
-    topDecreaseList.innerHTML = sortedData.slice(-5).reverse()
-        .map(d => `
-            <li>
-                <span class="district-name">${d.name}</span>
-                <span class="rate ${d.rate >= 0 ? 'positive' : 'negative'}">${d.rate >= 0 ? '+' : ''}${d.rate.toFixed(2)}%</span>
-            </li>
-        `).join('');
+    if (topDecreaseList) {
+        topDecreaseList.innerHTML = sortedData.slice(-5).reverse()
+            .map(d => `
+                <li onclick="handleDistrictClick('${d.id}')">
+                    <span class="district-name">${d.name}</span>
+                    <span class="rate ${d.rate >= 0 ? 'positive' : 'negative'}">${d.rate >= 0 ? '+' : ''}${d.rate.toFixed(2)}%</span>
+                </li>
+            `).join('');
+    }
 
     // 평균 계산
     const average = sortedData.reduce((sum, d) => sum + d.rate, 0) / sortedData.length;
     const avgEl = document.getElementById('average-value');
-    avgEl.textContent = `${average >= 0 ? '+' : ''}${average.toFixed(2)}%`;
-    avgEl.className = `average-value ${average >= 0 ? 'positive' : 'negative'}`;
+    if (avgEl) {
+        avgEl.textContent = `${average >= 0 ? '+' : ''}${average.toFixed(2)}%`;
+        // 클래스는 styles.css에서 이미 처리되거나 JS에서 상위 카드 색상을 바꿀 수도 있음
+        // 지금은 값 자체의 컬러는 styles.css의 .average-value에서 처리
+    }
 }
 
 // ========================================
@@ -457,7 +476,10 @@ function updateAverageLabel() {
         monthly: '월간 평균 상승률',
         yearly: '연간 평균 상승률'
     };
-    document.querySelector('.average-label').textContent = labels[currentPeriod];
+    const labelEl = document.getElementById('average-label');
+    if (labelEl) {
+        labelEl.textContent = labels[currentPeriod];
+    }
 }
 
 // ========================================

@@ -93,24 +93,35 @@
 
             <!-- Right Panel: Stats -->
             <aside class="stats-section">
+                <!-- Average Card: Top -->
+                <div class="stats-card average" id="average-card">
+                    <div class="average-header">
+                        <span class="average-icon">📊</span>
+                        <h3>서울 평균</h3>
+                    </div>
+                    <p class="average-value" id="average-value">0.00%</p>
+                    <p class="average-label" id="average-label">주간 평균 상승률</p>
+                </div>
+
+                <!-- District List Card: Seamless -->
+                <div class="stats-card district-list-card">
+                    <h3>구별 상세 내역</h3>
+                    <ul class="stats-list" id="stats-list">
+                        <!-- JS에서 동적으로 생성 -->
+                    </ul>
+                </div>
+
+                <!-- Top 5 Sections (Optional/Simplified) -->
                 <div class="stats-card top-increase">
                     <h3>🔥 상승률 TOP 5</h3>
                     <ul class="stats-list" id="top-increase-list">
-                        <!-- Dynamic content -->
                     </ul>
                 </div>
 
                 <div class="stats-card top-decrease">
                     <h3>📉 하락률 TOP 5</h3>
                     <ul class="stats-list" id="top-decrease-list">
-                        <!-- Dynamic content -->
                     </ul>
-                </div>
-
-                <div class="stats-card average">
-                    <h3>📊 서울 평균</h3>
-                    <div class="average-value" id="average-value">+0.12%</div>
-                    <div class="average-label">주간 평균 상승률</div>
                 </div>
             </aside>
         </main>
