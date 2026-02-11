@@ -357,24 +357,25 @@ function colorizeMap() {
 }
 
 // ========================================
-// 상승률에 따른 색상 반환
+// 상승률에 따른 색상 반환 (Toss Style)
 // ========================================
 function getColorForRate(rate, period) {
-    // 기간별 스케일 조정
+    // 기간별 스케일 조정 (변동률 직관성 확보)
     let scale = 1;
     if (period === 'monthly') scale = 0.2;
-    if (period === 'yearly') scale = 0.02;
+    if (period === 'yearly') scale = 0.05;
 
     const normalizedRate = rate * scale;
 
-    if (normalizedRate <= -0.1) return '#1a5fb4';      // 진한 파랑
-    if (normalizedRate <= -0.05) return '#3584e4';    // 파랑
-    if (normalizedRate <= -0.01) return '#99c1f1';    // 연한 파랑
-    if (normalizedRate <= 0.01) return '#f6f5f4';     // 중립
-    if (normalizedRate <= 0.05) return '#f8e45c';     // 노랑
-    if (normalizedRate <= 0.10) return '#ff7800';     // 주황
-    if (normalizedRate <= 0.15) return '#e01b24';     // 빨강
-    return '#a51d2d';                                  // 진한 빨강
+    // Toss Style Heatmap Colors (Light Mode Optimized)
+    if (normalizedRate <= -0.15) return '#dae9ff';    // 진한 파랑 배경
+    if (normalizedRate <= -0.05) return '#ebf4ff';    // 파랑 배경
+    if (normalizedRate <= -0.01) return '#f2f8ff';    // 연한 파랑 배경
+    if (normalizedRate <= 0.01) return '#f9fafb';     // Neutral (Toss Gray 50)
+    if (normalizedRate <= 0.05) return '#fff5f5';     // 연한 빨강 배경
+    if (normalizedRate <= 0.10) return '#ffe3e3';     // 빨강 배경
+    if (normalizedRate <= 0.15) return '#ffc9c9';     // 진한 빨강 배경
+    return '#ffb3b3';                                  // 아주 진한 빨강 배경
 }
 
 // ========================================
@@ -587,39 +588,45 @@ function drawTrendChart(districtName, periodData) {
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            animation: {
+                duration: 1000,
+                easing: 'easeOutQuart'
+            },
             plugins: {
                 legend: {
                     display: false
                 },
                 tooltip: {
-                    backgroundColor: '#21262d',
-                    titleColor: '#f0f6fc',
-                    bodyColor: '#8b949e',
-                    borderColor: 'rgba(240, 246, 252, 0.1)',
-                    borderWidth: 1,
+                    backgroundColor: '#191f28',
+                    titleFont: { size: 14, weight: 'bold' },
+                    bodyFont: { size: 13 },
                     padding: 12,
+                    cornerRadius: 12,
                     displayColors: false,
                     callbacks: {
-                        label: (context) => `상승률: +${context.raw.toFixed(2)}%`
+                        label: (context) => `상승률: ${context.raw >= 0 ? '+' : ''}${context.raw.toFixed(2)}%`
                     }
                 }
             },
             scales: {
                 x: {
                     grid: {
-                        color: 'rgba(240, 246, 252, 0.05)'
+                        display: false
                     },
                     ticks: {
-                        color: '#8b949e'
+                        color: '#8b95a1',
+                        font: { size: 12, weight: '500' }
                     }
                 },
                 y: {
                     grid: {
-                        color: 'rgba(240, 246, 252, 0.05)'
+                        color: '#f2f4f6',
+                        drawBorder: false
                     },
                     ticks: {
-                        color: '#8b949e',
-                        callback: (value) => `${value.toFixed(2)}%`
+                        color: '#8b95a1',
+                        font: { size: 12 },
+                        callback: (value) => `${value >= 0 ? '+' : ''}${value.toFixed(2)}%`
                     }
                 }
             }
