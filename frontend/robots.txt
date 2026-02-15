@@ -1,3 +1,3 @@
 User-agent: *
 Allow: /
-Sitemap: https://seoulpricemap.vercel.app/sitemap.xml
+Sitemap: https://8282ok.com/sitemap.xml
